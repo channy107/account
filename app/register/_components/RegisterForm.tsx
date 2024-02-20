@@ -1,10 +1,12 @@
 "use client";
 
 import * as z from "zod";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { CardWrapper } from "@/components/auth/CardWrapper";
+
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -13,33 +15,45 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CardWrapper } from "@/components/auth/CardWrapper";
 
-import { LoginSchema } from "@/schemas";
+import { RegisterSchema } from "@/schemas";
 
-export const LoginForm = () => {
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
+export const RegisterForm = () => {
+  const form = useForm<z.infer<typeof RegisterSchema>>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: {
       email: "",
       password: "",
+      name: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {};
+  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {};
 
   return (
     <CardWrapper
-      headerTitle="로그인"
-      backButtonLabel="아직 계정이 없으신가요?"
-      backButtonHref="/register"
+      headerTitle="회원가입"
+      backButtonLabel="이미 계정이 있으신가요?"
+      backButtonHref="/login"
       showSocial
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="이름을 입력해주세요." />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"
@@ -66,21 +80,14 @@ export const LoginForm = () => {
                   <FormControl>
                     <Input {...field} placeholder="******" type="password" />
                   </FormControl>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    asChild
-                    className="px-0 font-normal"
-                  >
-                    <Link href="/reset">비밀번호를 잊으셨나요?</Link>
-                  </Button>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
+
           <Button type="submit" className="w-full">
-            로그인
+            회원가입
           </Button>
         </form>
       </Form>
