@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { CardWrapper } from "@/components/auth/CardWrapper";
@@ -16,12 +18,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-
+import { FormSuccess } from "@/components/auth/FormSuccess";
+import { FormError } from "@/components/auth/FormError";
 import { RegisterSchema } from "@/schemas";
+import { register } from "@/actions/register";
 
 export const RegisterForm = () => {
+  const router = useRouter();
+  const [error, setError] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
+    mode: "onChange",
     defaultValues: {
       email: "",
       password: "",
@@ -29,7 +38,31 @@ export const RegisterForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {};
+  const {
+    watch,
+    formState: { errors },
+  } = form;
+
+  const [name, email, password] = watch(["name", "email", "password"]);
+
+  const isValidateError = Object.keys(errors).length !== 0;
+  const isEmptyField = name === "" || email === "" || password === "";
+
+  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+    setError("");
+
+    startTransition(() => {
+      register(values)
+        .then((data) => {
+          router.push("/login");
+        })
+        .catch((error) => {
+          setError(error.message);
+        });
+    });
+  };
+
+  const isSubmitButtonDisabled = isPending || isValidateError || isEmptyField;
 
   return (
     <CardWrapper
@@ -85,8 +118,12 @@ export const RegisterForm = () => {
               )}
             />
           </div>
-
-          <Button type="submit" className="w-full">
+          <FormError message={error} />
+          <Button
+            disabled={isSubmitButtonDisabled}
+            type="submit"
+            className="w-full"
+          >
             회원가입
           </Button>
         </form>
