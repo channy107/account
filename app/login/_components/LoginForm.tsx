@@ -2,6 +2,8 @@
 
 import * as z from "zod";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -15,20 +17,49 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/auth/FormError";
 import { CardWrapper } from "@/components/auth/CardWrapper";
-
+import { login } from "@/actions/login";
 import { LoginSchema } from "@/schemas";
 
 export const LoginForm = () => {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+  const [error, setError] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
+    mode: "onChange",
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {};
+  const {
+    watch,
+    formState: { errors },
+  } = form;
+
+  const [email, password] = watch(["email", "password"]);
+
+  const isValidateError = Object.keys(errors).length !== 0;
+  const isEmptyField = email === "" || password === "";
+
+  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setError("");
+
+    startTransition(() => {
+      login(values, callbackUrl)
+        .then((data) => {})
+        .catch((error) => {
+          setError(error.message);
+        });
+    });
+  };
+
+  const isSubmitButtonDisabled = isPending || isValidateError || isEmptyField;
 
   return (
     <CardWrapper
@@ -79,7 +110,12 @@ export const LoginForm = () => {
               )}
             />
           </div>
-          <Button type="submit" className="w-full">
+          <FormError message={error} />
+          <Button
+            disabled={isSubmitButtonDisabled}
+            type="submit"
+            className="w-full"
+          >
             로그인
           </Button>
         </form>
