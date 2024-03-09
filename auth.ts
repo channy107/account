@@ -3,9 +3,10 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
 import authConfig from "@/auth.config";
 import { getUserById } from "@/data/user";
-import { UserRole } from "@/db/schema";
+import { UserRole, user as dbUser } from "@/db/schema";
 import { getAccountByUserId } from "./data/account";
 import db from "./db/drizzle";
+import { eq } from "drizzle-orm";
 
 export const {
   handlers: { GET, POST },
@@ -16,6 +17,14 @@ export const {
   pages: {
     signIn: "/login",
     newUser: "/register",
+  },
+  events: {
+    async linkAccount({ user }) {
+      await db
+        .update(dbUser)
+        .set({ emailVerified: new Date() })
+        .where(eq(dbUser.id, user.id!));
+    },
   },
   callbacks: {
     async session({ token, session }) {

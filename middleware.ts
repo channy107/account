@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { DEFAULT_LOGIN_REDIRECT, authRoutes } from "./routes";
+import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes } from "./routes";
 import { auth } from "./auth";
 
 export async function middleware(req: NextRequest) {
   const session = await auth();
   const { pathname, search } = req.nextUrl;
 
+  const isApiAuthRoute = pathname.includes(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(pathname);
+
+  if (isApiAuthRoute) {
+    return NextResponse.next();
+  }
 
   if (isAuthRoute) {
     if (session) {

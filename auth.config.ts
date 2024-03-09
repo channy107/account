@@ -1,16 +1,21 @@
 import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-
+import Kakao from "next-auth/providers/kakao";
 import { LoginSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
 
 export default {
   providers: [
-    Google({}),
-    Github({}),
+    Kakao({
+      clientId: process.env.AUTH_KAKAO_ID,
+      clientSecret: process.env.AUTH_KAKAO_SECRET,
+    }),
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    }),
     Credentials({
       async authorize(credentials) {
         const validatedFields = LoginSchema.safeParse(credentials);
@@ -19,7 +24,7 @@ export default {
           const { email, password } = validatedFields.data;
 
           const user = await getUserByEmail(email);
-          if (!user) return null;
+          if (!user || !user[0].password) return null;
 
           const passwordsMatch = await bcrypt.compare(
             password,

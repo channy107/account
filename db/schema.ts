@@ -1,5 +1,13 @@
 import { relations } from "drizzle-orm";
-import { text, timestamp, pgTable, uuid, integer } from "drizzle-orm/pg-core";
+import {
+  text,
+  timestamp,
+  pgTable,
+  primaryKey,
+  integer,
+  uuid,
+} from "drizzle-orm/pg-core";
+import type { AdapterAccount } from "@auth/core/adapters";
 
 export enum UserRole {
   ADMIN = "admin",
@@ -7,37 +15,43 @@ export enum UserRole {
 }
 
 export const user = pgTable("user", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").unique(),
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name"),
+  email: text("email"),
+  emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
-  password: text("password").notNull(),
+  password: text("password"),
   role: text("role")
-    .notNull()
     .$type<UserRole>()
     .$default(() => UserRole.USER),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const userRelations = relations(user, ({ many }) => ({
-  account: many(account),
-}));
-
-export const account = pgTable("account", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: text("userId").notNull(),
-  type: text("userId").notNull(),
-  provider: text("provider").notNull().unique(),
-  providerAccountId: text("providerAccountId").notNull().unique(),
-  refreshToken: text("refreshToken"),
-  accessToken: text("accessToken"),
-  expiresAt: integer("expiresAt"),
-  tokenType: text("tokenType"),
-  scope: text("scope"),
-  idToken: text("idToken"),
-  sessionState: text("sessionState"),
-});
+export const account = pgTable(
+  "account",
+  {
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    expires_in: integer("expires_in"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => ({
+    compoundKey: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
+  })
+);
 
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
