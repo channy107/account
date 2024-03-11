@@ -22,6 +22,7 @@ import { CardWrapper } from "@/components/auth/CardWrapper";
 import { login } from "@/actions/login";
 import { LoginSchema } from "@/schemas";
 import { FormSuccess } from "@/components/auth/FormSuccess";
+import ConfirmButton from "@/components/common/ConfirmButton";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -102,28 +103,26 @@ export const LoginForm = () => {
                   <FormControl>
                     <Input {...field} placeholder="******" type="password" />
                   </FormControl>
+                  <FormMessage />
                   <Button
                     size="sm"
                     variant="link"
                     asChild
-                    className="px-0 font-normal text-sky-600 mt-10"
+                    className="px-0 font-normal text-sky-700 mt-10"
                   >
                     <Link href="/reset">비밀번호를 잊으셨나요?</Link>
                   </Button>
-                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
           <FormSuccess message={success} />
           <FormError message={error} />
-          <Button
+          <ConfirmButton
             disabled={isSubmitButtonDisabled}
-            type="submit"
-            className="w-full"
-          >
-            로그인
-          </Button>
+            isPending={isPending}
+            buttonText={"로그인하기"}
+          />
         </form>
       </Form>
     </CardWrapper>

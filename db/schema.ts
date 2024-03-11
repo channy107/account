@@ -28,6 +28,9 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export type TSelectUser = typeof user.$inferSelect;
+export type TInsertUser = typeof user.$inferInsert;
+
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
 }));

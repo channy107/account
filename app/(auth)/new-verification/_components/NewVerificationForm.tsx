@@ -29,8 +29,8 @@ export const NewVerificationForm = () => {
       .then((data) => {
         setSuccess(data.success);
       })
-      .catch(() => {
-        setError("문제가 발생하였습니다.");
+      .catch((error) => {
+        setError(error.message);
       });
   }, [token, success, error]);
 
@@ -41,7 +41,7 @@ export const NewVerificationForm = () => {
   return (
     <CardWrapper
       headerTitle="회원가입 메일 확인"
-      backButtonLabel="로그인"
+      backButtonLabel="로그인으로 돌아가기"
       backButtonHref="/login"
     >
       <div className="flex items-center w-full justify-center">

@@ -15,11 +15,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { CardWrapper } from "@/components/auth/CardWrapper";
 import { FormError } from "@/components/auth/FormError";
 import { FormSuccess } from "@/components/auth/FormSuccess";
 import { reset } from "@/actions/reset";
+import ConfirmButton from "@/components/common/ConfirmButton";
 
 export const ResetForm = () => {
   const [error, setError] = useState<string | undefined>("");
@@ -43,7 +43,7 @@ export const ResetForm = () => {
           setSuccess(data?.success);
         })
         .catch((error) => {
-          setError(error);
+          setError(error.message);
         });
     });
   };
@@ -78,9 +78,11 @@ export const ResetForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button disabled={isPending} type="submit" className="w-full">
-            비밀번호 재설정
-          </Button>
+          <ConfirmButton
+            disabled={isPending}
+            isPending={isPending}
+            buttonText={"비밀번호 재설정하기"}
+          />
         </form>
       </Form>
     </CardWrapper>

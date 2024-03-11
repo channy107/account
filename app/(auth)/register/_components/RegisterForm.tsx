@@ -16,11 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { FormSuccess } from "@/components/auth/FormSuccess";
 import { FormError } from "@/components/auth/FormError";
 import { RegisterSchema } from "@/schemas";
 import { register } from "@/actions/register";
+import ConfirmButton from "@/components/common/ConfirmButton";
 
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");
@@ -120,13 +120,11 @@ export const RegisterForm = () => {
           </div>
           <FormSuccess message={success} />
           <FormError message={error} />
-          <Button
+          <ConfirmButton
             disabled={isSubmitButtonDisabled}
-            type="submit"
-            className="w-full"
-          >
-            회원가입
-          </Button>
+            isPending={isPending}
+            buttonText={"가입하기"}
+          />
         </form>
       </Form>
     </CardWrapper>

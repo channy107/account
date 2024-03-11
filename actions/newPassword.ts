@@ -2,12 +2,12 @@
 
 import * as z from "zod";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 
-import { NewPasswordSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
 import { getPasswordResetTokenByToken } from "@/data/passwordResetToken";
+import { NewPasswordSchema } from "@/schemas";
 import { passwordResetToken, user } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import db from "@/db/drizzle";
 
 export const newPassword = async (

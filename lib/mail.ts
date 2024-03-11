@@ -4,13 +4,13 @@ const HOST = process.env.HOST;
 const accessKeyId = process.env.ACCESS_KEY_ID!;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY!;
 
+const sesClient = new SESClient({
+  region: "us-east-1",
+  credentials: { accessKeyId, secretAccessKey },
+});
+
 export const sendPasswordResetEmail = async (email: string, token: string) => {
   const confirmLink = `${HOST}/new-password?token=${token}`;
-
-  const sesClient = new SESClient({
-    region: "us-east-1",
-    credentials: { accessKeyId, secretAccessKey },
-  });
 
   const params = {
     Destination: {
@@ -33,17 +33,13 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     const data = await sesClient.send(new SendEmailCommand(params));
     console.log("Email sent! Message ID:", data.MessageId);
   } catch (error) {
-    console.error("Error sending email", error);
+    console.error(error);
+    throw new Error();
   }
 };
 
 export const sendVerificationEmail = async (email: string, token: string) => {
   const confirmLink = `${HOST}/new-verification?token=${token}`;
-
-  const sesClient = new SESClient({
-    region: "us-east-1",
-    credentials: { accessKeyId, secretAccessKey },
-  });
 
   const params = {
     Destination: {
@@ -66,6 +62,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     const data = await sesClient.send(new SendEmailCommand(params));
     console.log("Email sent! Message ID:", data.MessageId);
   } catch (error) {
-    console.error("Error sending email", error);
+    console.error(error);
+    throw new Error();
   }
 };

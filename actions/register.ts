@@ -2,11 +2,12 @@
 
 import * as z from "zod";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 
 import db from "@/db/drizzle";
 import { RegisterSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
-import { user } from "@/db/schema";
+import { user, verificationToken } from "@/db/schema";
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail";
 
@@ -32,11 +33,23 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     password: hashedPassword,
   });
 
-  const verificationToken = await generateVerificationToken(email);
+  const generatedVerificationToken = await generateVerificationToken(email);
 
-  await sendVerificationEmail(verificationToken.email, verificationToken.token);
+  try {
+    await sendVerificationEmail(
+      generatedVerificationToken.email,
+      generatedVerificationToken.token
+    );
+  } catch (error) {
+    await db.delete(user).where(eq(user.email, email));
+    await db
+      .delete(verificationToken)
+      .where(eq(verificationToken.email, generatedVerificationToken.email));
+
+    throw new Error("메일 발송에 실패하였습니다.");
+  }
 
   return {
-    success: "회원가입을 위한 이메일을 발송했습니다. 이메일을 확인해주세요.",
+    success: "회원가입을 위한 이메일을 발송했습니다. \n이메일을 확인해주세요.",
   };
 };

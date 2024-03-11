@@ -11,8 +11,13 @@ const Dashboard = () => {
     <>
       <Button
         onClick={() => {
-          logout();
-          window.location.reload();
+          logout()
+            .then(() => {
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.log("error", error);
+            });
         }}
       >
         로그아웃

@@ -21,7 +21,7 @@ export default async function RootLayout({
     <SessionProvider session={session}>
       <html lang="en">
         <body className={inter.className}>
-          <main className="h-full flex items-center justify-center bg-slate-100">
+          <main className="h-[600px] sm:h-full flex items-center justify-center">
             {children}
           </main>
         </body>

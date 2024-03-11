@@ -22,14 +22,12 @@ export const {
     async linkAccount({ user }) {
       await db
         .update(dbUser)
-        .set({ emailVerified: new Date() })
+        .set({ emailVerified: new Date(), role: UserRole.USER })
         .where(eq(dbUser.id, user.id!));
     },
   },
   callbacks: {
     async signIn({ user, account }) {
-      console.log("user", user);
-      console.log("account", account);
       if (account?.provider !== "credentials") return true;
 
       const existingUser = await getUserById(user.id!);
@@ -38,38 +36,32 @@ export const {
 
       return true;
     },
+    async jwt({ token }) {
+      if (!token.sub) return token;
+
+      if (!token.isOAuth) {
+        const existingUser = await getUserById(token.sub);
+
+        if (!existingUser) return token;
+
+        const existingAccount = await getAccountByUserId(existingUser.id);
+
+        token.isOAuth = existingAccount?.length !== 0;
+        token.role = existingUser.role;
+        return token;
+      }
+
+      return token;
+    },
     async session({ token, session }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub;
-      }
-
-      if (token.role && session.user) {
-        session.user.role = token.role as UserRole;
-      }
-
-      if (session.user) {
+      if (session.user && (!session.user.isOAuth || !session.user.role)) {
         session.user.name = token.name as string;
         session.user.email = token.email as string;
+        session.user.role = token.role as UserRole;
         session.user.isOAuth = token.isOAuth as boolean;
       }
 
       return session;
-    },
-    async jwt({ token }) {
-      if (!token.sub) return token;
-
-      const existingUser = await getUserById(token.sub);
-
-      if (!existingUser) return token;
-
-      const existingAccount = await getAccountByUserId(existingUser.id);
-
-      token.isOAuth = existingAccount?.length !== 0;
-      token.name = existingUser.name;
-      token.email = existingUser.email;
-      token.role = existingUser.role;
-
-      return token;
     },
   },
   adapter: DrizzleAdapter(db),

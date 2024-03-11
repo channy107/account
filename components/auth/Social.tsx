@@ -2,9 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import { RiKakaoTalkFill } from "react-icons/ri";
-import { SiNaver } from "react-icons/si";
 import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -22,12 +20,13 @@ export const Social = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-2 px-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-6">
       <Button
         size="lg"
         className="w-full"
         variant="outline"
         onClick={() => onClick("kakao")}
+        aria-label="kakao"
       >
         <RiKakaoTalkFill className="h-5 w-5" />
       </Button>
@@ -37,6 +36,7 @@ export const Social = () => {
         className="w-full"
         variant="outline"
         onClick={() => onClick("google")}
+        aria-label="google"
       >
         <FcGoogle className="h-5 w-5" />
       </Button>

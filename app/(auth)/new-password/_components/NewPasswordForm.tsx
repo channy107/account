@@ -21,6 +21,7 @@ import { FormSuccess } from "@/components/auth/FormSuccess";
 import { Button } from "@/components/ui/button";
 import { NewPasswordSchema } from "@/schemas";
 import { newPassword } from "@/actions/newPassword";
+import ConfirmButton from "@/components/common/ConfirmButton";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -58,7 +59,7 @@ export const NewPasswordForm = () => {
           setSuccess(data?.success);
         })
         .catch((error) => {
-          setError(error);
+          setError(error.message);
         });
     });
   };
@@ -95,13 +96,11 @@ export const NewPasswordForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button
+          <ConfirmButton
             disabled={isSubmitButtonDisabled}
-            type="submit"
-            className="w-full"
-          >
-            완료
-          </Button>
+            isPending={isPending}
+            buttonText={"재설정 완료"}
+          />
         </form>
       </Form>
     </CardWrapper>

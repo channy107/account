@@ -1,10 +1,10 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { getUserByEmail } from "@/data/user";
 import { getVerificationTokenByToken } from "@/data/verificationToken";
 import db from "@/db/drizzle";
 import { user, verificationToken } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 export const newVerification = async (token: string) => {
   const existingToken = await getVerificationTokenByToken(token);
