@@ -1,13 +1,10 @@
 "use client";
-
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/actions/logout";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const Dashboard = () => {
   const user = useCurrentUser();
-  const router = useRouter();
   console.log("user", user);
 
   return (
@@ -15,7 +12,7 @@ const Dashboard = () => {
       <Button
         onClick={() => {
           logout();
-          router.push("/login");
+          window.location.reload();
         }}
       >
         로그아웃

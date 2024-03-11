@@ -106,7 +106,7 @@ export const LoginForm = () => {
                     size="sm"
                     variant="link"
                     asChild
-                    className="px-0 font-normal"
+                    className="px-0 font-normal text-sky-600 mt-10"
                   >
                     <Link href="/reset">비밀번호를 잊으셨나요?</Link>
                   </Button>

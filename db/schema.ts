@@ -28,6 +28,10 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const userRelations = relations(user, ({ many }) => ({
+  accounts: many(account),
+}));
+
 export const verificationToken = pgTable("verificationToken", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   email: text("email").unique().notNull(),
@@ -37,9 +41,9 @@ export const verificationToken = pgTable("verificationToken", {
 
 export const passwordResetToken = pgTable("passwordResetToken", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
-  email: text("email").unique(),
-  token: text("token").unique(),
-  expires: timestamp("expires"),
+  email: text("email").unique().notNull(),
+  token: text("token").unique().notNull(),
+  expires: timestamp("expires").notNull(),
 });
 
 export const account = pgTable(
@@ -50,7 +54,7 @@ export const account = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     type: text("type").$type<AdapterAccount["type"]>().notNull(),
     provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
+    providerAccountId: text("providerAccountId").notNull().unique(),
     refresh_token: text("refresh_token"),
     access_token: text("access_token"),
     expires_at: integer("expires_at"),
