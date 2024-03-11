@@ -7,6 +7,8 @@ import db from "@/db/drizzle";
 import { RegisterSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
 import { user } from "@/db/schema";
+import { generateVerificationToken } from "@/lib/tokens";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
@@ -30,5 +32,11 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
     password: hashedPassword,
   });
 
-  return { success: "회원 가입 성공!!" };
+  const verificationToken = await generateVerificationToken(email);
+
+  await sendVerificationEmail(verificationToken.email, verificationToken.token);
+
+  return {
+    success: "회원가입을 위한 이메일을 발송했습니다. 이메일을 확인해주세요.",
+  };
 };

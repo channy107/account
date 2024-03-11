@@ -6,6 +6,8 @@ import { signIn } from "@/auth";
 import { LoginSchema } from "@/schemas";
 import { getUserByEmail } from "@/data/user";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { generateVerificationToken } from "@/lib/tokens";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export const login = async (
   values: z.infer<typeof LoginSchema>,
@@ -14,15 +16,30 @@ export const login = async (
   const validatedFields = LoginSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: "잘못된 입력 값이 존재합니다." };
+    throw new Error("잘못된 입력 값이 존재합니다.");
   }
 
   const { email, password } = validatedFields.data;
 
   const existingUser = await getUserByEmail(email);
 
-  if (!existingUser) {
-    throw new Error("존재하지 않는 회원입니다.");
+  if (!existingUser || !existingUser.email || !existingUser.password) {
+    throw new Error("존재하지 않는 이메일입니다.");
+  }
+
+  if (!existingUser.emailVerified) {
+    const verificationToken = await generateVerificationToken(
+      existingUser.email
+    );
+
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
+
+    return {
+      success: "회원가입이 완료되지 않았습니다. 가입 확인 메일을 확인해주세요.",
+    };
   }
 
   try {

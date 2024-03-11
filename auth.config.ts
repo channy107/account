@@ -11,10 +11,12 @@ export default {
     Kakao({
       clientId: process.env.AUTH_KAKAO_ID,
       clientSecret: process.env.AUTH_KAKAO_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
     Credentials({
       async authorize(credentials) {
@@ -24,14 +26,11 @@ export default {
           const { email, password } = validatedFields.data;
 
           const user = await getUserByEmail(email);
-          if (!user || !user[0].password) return null;
+          if (!user || !user.password) return null;
 
-          const passwordsMatch = await bcrypt.compare(
-            password,
-            user[0].password
-          );
+          const passwordsMatch = await bcrypt.compare(password, user.password);
 
-          if (passwordsMatch) return user[0];
+          if (passwordsMatch) return user;
         }
 
         return null;

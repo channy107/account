@@ -28,6 +28,20 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const verificationToken = pgTable("verificationToken", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  email: text("email").unique().notNull(),
+  token: text("token").unique().notNull(),
+  expires: timestamp("expires").notNull(),
+});
+
+export const passwordResetToken = pgTable("passwordResetToken", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  email: text("email").unique(),
+  token: text("token").unique(),
+  expires: timestamp("expires"),
+});
+
 export const account = pgTable(
   "account",
   {

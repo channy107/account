@@ -27,6 +27,17 @@ export const {
     },
   },
   callbacks: {
+    async signIn({ user, account }) {
+      console.log("user", user);
+      console.log("account", account);
+      if (account?.provider !== "credentials") return true;
+
+      const existingUser = await getUserById(user.id!);
+
+      if (!existingUser?.emailVerified) return false;
+
+      return true;
+    },
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
@@ -51,12 +62,12 @@ export const {
 
       if (!existingUser) return token;
 
-      const existingAccount = await getAccountByUserId(existingUser[0].id);
+      const existingAccount = await getAccountByUserId(existingUser.id);
 
       token.isOAuth = existingAccount?.length !== 0;
-      token.name = existingUser[0].name;
-      token.email = existingUser[0].email;
-      token.role = existingUser[0].role;
+      token.name = existingUser.name;
+      token.email = existingUser.email;
+      token.role = existingUser.role;
 
       return token;
     },

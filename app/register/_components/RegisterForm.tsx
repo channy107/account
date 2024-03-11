@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { CardWrapper } from "@/components/auth/CardWrapper";
@@ -24,8 +23,8 @@ import { RegisterSchema } from "@/schemas";
 import { register } from "@/actions/register";
 
 export const RegisterForm = () => {
-  const router = useRouter();
   const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -49,12 +48,13 @@ export const RegisterForm = () => {
   const isEmptyField = name === "" || email === "" || password === "";
 
   const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+    setSuccess("");
     setError("");
 
     startTransition(() => {
       register(values)
         .then((data) => {
-          router.push("/login");
+          setSuccess(data.success);
         })
         .catch((error) => {
           setError(error.message);
@@ -118,6 +118,7 @@ export const RegisterForm = () => {
               )}
             />
           </div>
+          <FormSuccess message={success} />
           <FormError message={error} />
           <Button
             disabled={isSubmitButtonDisabled}

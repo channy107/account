@@ -2,12 +2,14 @@ import db from "@/db/drizzle";
 
 export const getUserByEmail = async (email: string) => {
   try {
-    const user = await db.query.user.findMany({
+    const user = await db.query.user.findFirst({
       where: (user, { eq }) => eq(user.email, email),
     });
-    const notFoundUser = user.length === 0;
+    if (!user) {
+      return null;
+    }
 
-    return notFoundUser ? null : user;
+    return user;
   } catch {
     return null;
   }
@@ -15,13 +17,15 @@ export const getUserByEmail = async (email: string) => {
 
 export const getUserById = async (id: string) => {
   try {
-    const user = await db.query.user.findMany({
+    const user = await db.query.user.findFirst({
       where: (user, { eq }) => eq(user.id, id),
     });
 
-    const notFoundUser = user.length === 0;
+    if (!user) {
+      return null;
+    }
 
-    return notFoundUser ? null : user;
+    return user;
   } catch {
     return null;
   }

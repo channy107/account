@@ -21,10 +21,12 @@ import { FormError } from "@/components/auth/FormError";
 import { CardWrapper } from "@/components/auth/CardWrapper";
 import { login } from "@/actions/login";
 import { LoginSchema } from "@/schemas";
+import { FormSuccess } from "@/components/auth/FormSuccess";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  const [success, setSuccess] = useState<string | undefined>("");
   const [error, setError] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
@@ -48,11 +50,14 @@ export const LoginForm = () => {
   const isEmptyField = email === "" || password === "";
 
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setSuccess("");
     setError("");
 
     startTransition(() => {
       login(values, callbackUrl)
-        .then((data) => {})
+        .then((data) => {
+          setSuccess(data?.success);
+        })
         .catch((error) => {
           setError(error.message);
         });
@@ -110,6 +115,7 @@ export const LoginForm = () => {
               )}
             />
           </div>
+          <FormSuccess message={success} />
           <FormError message={error} />
           <Button
             disabled={isSubmitButtonDisabled}
