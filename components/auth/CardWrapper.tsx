@@ -14,8 +14,8 @@ interface Props {
   children: React.ReactNode;
   headerTitle: string;
   headerDescription?: string;
-  backButtonLabel: string;
-  backButtonHref: string;
+  backButtonLabel?: string;
+  backButtonHref?: string;
   showSocial?: boolean;
 }
 
@@ -34,9 +34,11 @@ export const CardWrapper = ({
       </CardHeader>
       <CardContent>{children}</CardContent>
       {showSocial && <Social />}
-      <CardFooter>
-        <BackButton label={backButtonLabel} href={backButtonHref} />
-      </CardFooter>
+      {backButtonHref && backButtonLabel && (
+        <CardFooter>
+          <BackButton label={backButtonLabel} href={backButtonHref} />
+        </CardFooter>
+      )}
     </Card>
   );
 };
