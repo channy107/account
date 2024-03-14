@@ -6,6 +6,7 @@ import {
   primaryKey,
   integer,
   uuid,
+  boolean,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 
@@ -80,3 +81,38 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const service = pgTable("service", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  label: text("label").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+export type TSelectService = typeof service.$inferSelect;
+
+export const serviceRelations = relations(service, ({ many }) => ({
+  serviceCategories: many(serviceCategory),
+}));
+
+export const serviceCategory = pgTable("serviceCategory", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  label: text("label").notNull(),
+  isMain: boolean("isMain").default(false),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+});
+
+export type TSelectServiceCategory = typeof serviceCategory.$inferSelect;
+
+export const serviceCategoryRelations = relations(
+  serviceCategory,
+  ({ one }) => ({
+    service: one(service, {
+      fields: [serviceCategory.serviceId],
+      references: [service.id],
+    }),
+  })
+);
