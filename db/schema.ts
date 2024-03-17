@@ -15,6 +15,8 @@ export enum UserRole {
   USER = "user",
 }
 
+// Account
+
 export const user = pgTable("user", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name"),
@@ -53,9 +55,6 @@ export const passwordResetToken = pgTable("passwordResetToken", {
 export const account = pgTable(
   "account",
   {
-    userId: uuid("userId")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
     type: text("type").$type<AdapterAccount["type"]>().notNull(),
     provider: text("provider").notNull(),
     providerAccountId: text("providerAccountId").notNull().unique(),
@@ -67,6 +66,9 @@ export const account = pgTable(
     scope: text("scope"),
     id_token: text("id_token"),
     session_state: text("session_state"),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
   },
   (account) => ({
     compoundKey: primaryKey({
@@ -82,6 +84,8 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
+// Admin
+
 export const service = pgTable("service", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
@@ -93,6 +97,8 @@ export type TSelectService = typeof service.$inferSelect;
 
 export const serviceRelations = relations(service, ({ many }) => ({
   serviceCategories: many(serviceCategory),
+  banners: many(storeBanner),
+  categories: many(storeCategory),
 }));
 
 export const serviceCategory = pgTable("serviceCategory", {
@@ -116,3 +122,135 @@ export const serviceCategoryRelations = relations(
     }),
   })
 );
+
+// Admin > Store Service
+
+export const storeBanner = pgTable("banner", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  images: text("images").array().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+});
+
+export type TSelectBanner = typeof storeBanner.$inferSelect;
+
+export const storeBannerRelations = relations(storeBanner, ({ one }) => ({
+  service: one(service, {
+    fields: [storeBanner.serviceId],
+    references: [service.id],
+  }),
+}));
+
+export const storeCategory = pgTable("storeCategory", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+});
+
+export type TSelectStoreCategory = typeof storeCategory.$inferSelect;
+
+export const storeCategoryRelations = relations(
+  storeCategory,
+  ({ one, many }) => ({
+    service: one(service, {
+      fields: [storeCategory.serviceId],
+      references: [service.id],
+    }),
+    products: many(storeProducts),
+  })
+);
+
+export const storeSize = pgTable("storeSize", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+});
+
+export type TSelectStoreSize = typeof storeSize.$inferSelect;
+
+export const storeSizeRelations = relations(storeSize, ({ one, many }) => ({
+  service: one(service, {
+    fields: [storeSize.serviceId],
+    references: [service.id],
+  }),
+  products: many(storeProducts),
+}));
+
+export const storeColor = pgTable("storeColor", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+});
+
+export type TSelectStoreColor = typeof storeColor.$inferSelect;
+
+export const storeColorRelations = relations(storeColor, ({ one, many }) => ({
+  service: one(service, {
+    fields: [storeColor.serviceId],
+    references: [service.id],
+  }),
+  products: many(storeProducts),
+}));
+
+export const storeProducts = pgTable("storeProducts", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  brandName: text("brandName").notNull(),
+  price: integer("price").notNull(),
+  isSale: boolean("isSale").default(false),
+  saleRate: integer("saleRate"),
+  isSoldOut: boolean("isSale").default(false),
+  images: text("images").array().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+  categoryId: uuid("categoryId")
+    .notNull()
+    .references(() => storeCategory.id, { onDelete: "cascade" }),
+  sizeId: uuid("sizeId")
+    .notNull()
+    .references(() => storeSize.id, { onDelete: "cascade" }),
+  colorId: uuid("colorId")
+    .notNull()
+    .references(() => storeColor.id, { onDelete: "cascade" }),
+});
+
+export type TSelectStoreProducts = typeof storeProducts.$inferSelect;
+
+export const storeProductsRelations = relations(storeProducts, ({ one }) => ({
+  service: one(service, {
+    fields: [storeProducts.serviceId],
+    references: [service.id],
+  }),
+  category: one(storeCategory, {
+    fields: [storeProducts.categoryId],
+    references: [storeCategory.id],
+  }),
+  size: one(storeSize, {
+    fields: [storeProducts.categoryId],
+    references: [storeSize.id],
+  }),
+  color: one(storeColor, {
+    fields: [storeProducts.categoryId],
+    references: [storeColor.id],
+  }),
+}));
