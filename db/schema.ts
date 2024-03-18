@@ -127,6 +127,7 @@ export const serviceCategoryRelations = relations(
 
 export const storeBanner = pgTable("banner", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
   images: text("images").array().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
