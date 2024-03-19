@@ -1,33 +1,38 @@
 "use client";
-import { Plus } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
 
-import Heading from "@/components/admin/Heading";
-import DataTable from "@/components/admin/DataTable";
-import { SizeColumn, columns } from "./SizeColumn";
 import { Button } from "@/components/ui/button";
 
-interface Props {
-  data: SizeColumn[];
+import { Separator } from "@radix-ui/react-separator";
+import { Plus } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { ProductColumn, columns } from "./ProductColumn";
+import Heading from "@/components/admin/Heading";
+import DataTable from "@/components/admin/DataTable";
+
+interface ProductClientProps {
+  data: ProductColumn[];
 }
 
-const SizeTable = ({ data }: Props) => {
+const ProductTable = ({ data }: ProductClientProps) => {
   const router = useRouter();
   const params = useParams<{ serviceName: string }>();
   return (
     <>
       <div className="flex items-center justify-between">
-        <Heading title={`사이즈 목록 (${data.length})`} />
+        <Heading title={`상품 목록 (${data.length})`} />
         <Button
-          onClick={() => router.push(`/admin/${params.serviceName}/size/new`)}
+          onClick={() =>
+            router.push(`/admin/${params.serviceName}/product/new`)
+          }
         >
           <Plus className="mr-2 h-4 w-4" />
           만들기
         </Button>
       </div>
+      <Separator />
       <DataTable columns={columns} data={data} searchKey="name" />
     </>
   );
 };
 
-export default SizeTable;
+export default ProductTable;

@@ -164,30 +164,9 @@ export const storeCategoryRelations = relations(
       fields: [storeCategory.serviceId],
       references: [service.id],
     }),
-    products: many(storeProducts),
+    products: many(storeProduct),
   })
 );
-
-export const storeSize = pgTable("storeSize", {
-  id: uuid("id").defaultRandom().notNull().primaryKey(),
-  name: text("name").notNull(),
-  value: text("value").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  serviceId: uuid("serviceId")
-    .notNull()
-    .references(() => service.id, { onDelete: "cascade" }),
-});
-
-export type TSelectStoreSize = typeof storeSize.$inferSelect;
-
-export const storeSizeRelations = relations(storeSize, ({ one, many }) => ({
-  service: one(service, {
-    fields: [storeSize.serviceId],
-    references: [service.id],
-  }),
-  products: many(storeProducts),
-}));
 
 export const storeColor = pgTable("storeColor", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
@@ -207,17 +186,38 @@ export const storeColorRelations = relations(storeColor, ({ one, many }) => ({
     fields: [storeColor.serviceId],
     references: [service.id],
   }),
-  products: many(storeProducts),
+  products: many(storeProduct),
 }));
 
-export const storeProducts = pgTable("storeProducts", {
+export const storeBrand = pgTable("storeBrand", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
-  brandName: text("brandName").notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  serviceId: uuid("serviceId")
+    .notNull()
+    .references(() => service.id, { onDelete: "cascade" }),
+});
+
+export type TSelectStoreBrand = typeof storeBrand.$inferSelect;
+
+export const storeBrandRelations = relations(storeBrand, ({ one, many }) => ({
+  service: one(service, {
+    fields: [storeBrand.serviceId],
+    references: [service.id],
+  }),
+  products: many(storeProduct),
+}));
+
+export const storeProduct = pgTable("storeProducts", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
   price: integer("price").notNull(),
-  isSale: boolean("isSale").default(false),
+  isSale: boolean("isSale"),
   saleRate: integer("saleRate"),
-  isSoldOut: boolean("isSale").default(false),
+  isSoldOut: boolean("isSoldOut").default(false),
+  size: text("size").notNull(),
   images: text("images").array().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -227,31 +227,31 @@ export const storeProducts = pgTable("storeProducts", {
   categoryId: uuid("categoryId")
     .notNull()
     .references(() => storeCategory.id, { onDelete: "cascade" }),
-  sizeId: uuid("sizeId")
-    .notNull()
-    .references(() => storeSize.id, { onDelete: "cascade" }),
   colorId: uuid("colorId")
     .notNull()
     .references(() => storeColor.id, { onDelete: "cascade" }),
+  brandId: uuid("brandId")
+    .notNull()
+    .references(() => storeBrand.id, { onDelete: "cascade" }),
 });
 
-export type TSelectStoreProducts = typeof storeProducts.$inferSelect;
+export type TSelectStoreProduct = typeof storeProduct.$inferSelect;
 
-export const storeProductsRelations = relations(storeProducts, ({ one }) => ({
+export const storeProductsRelations = relations(storeProduct, ({ one }) => ({
   service: one(service, {
-    fields: [storeProducts.serviceId],
+    fields: [storeProduct.serviceId],
     references: [service.id],
   }),
   category: one(storeCategory, {
-    fields: [storeProducts.categoryId],
+    fields: [storeProduct.categoryId],
     references: [storeCategory.id],
   }),
-  size: one(storeSize, {
-    fields: [storeProducts.categoryId],
-    references: [storeSize.id],
-  }),
   color: one(storeColor, {
-    fields: [storeProducts.categoryId],
+    fields: [storeProduct.colorId],
     references: [storeColor.id],
+  }),
+  brand: one(storeBrand, {
+    fields: [storeProduct.brandId],
+    references: [storeBrand.id],
   }),
 }));

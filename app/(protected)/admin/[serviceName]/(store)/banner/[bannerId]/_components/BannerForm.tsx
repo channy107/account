@@ -73,7 +73,7 @@ const BannerForm = ({ initialData }: Props) => {
     startTransition(async () => {
       const formData = new FormData();
       data.images.forEach((file) => {
-        formData.append("bannerName", data.name);
+        formData.append("name", data.name);
         formData.append("file", file, file.name);
       });
       await uploadImage(formData)

@@ -1,28 +1,28 @@
 "use server";
 
 import db from "@/db/drizzle";
-import { storeSize } from "@/db/schema";
+import { storeBrand } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export const getSizes = async () => {
-  const sizes = await db.query.storeSize.findMany({
-    orderBy: (storeSize, { desc }) => [desc(storeSize.createdAt)],
+export const getBrands = async () => {
+  const brands = await db.query.storeBrand.findMany({
+    orderBy: (storeBrand, { desc }) => [desc(storeBrand.createdAt)],
   });
 
-  return sizes;
+  return brands;
 };
 
-export const getSize = async (id?: string) => {
+export const getBrand = async (id?: string) => {
   if (!id) return undefined;
-  const response = await db.query.storeSize.findFirst({
-    where: eq(storeSize.id, id),
+  const response = await db.query.storeBrand.findFirst({
+    where: eq(storeBrand.id, id),
   });
 
   return response;
 };
 
-export const createSize = async ({
+export const createBrand = async ({
   serviceId,
   name,
   value,
@@ -32,7 +32,7 @@ export const createSize = async ({
   value: string;
 }) => {
   const result = await db
-    .insert(storeSize)
+    .insert(storeBrand)
     .values({
       serviceId,
       name,
@@ -45,7 +45,7 @@ export const createSize = async ({
   return result;
 };
 
-export const updateSize = async ({
+export const updateBrand = async ({
   id,
   name,
   value,
@@ -55,18 +55,18 @@ export const updateSize = async ({
   value: string;
 }) => {
   const result = await db
-    .update(storeSize)
+    .update(storeBrand)
     .set({
       name,
       value,
     })
-    .where(eq(storeSize.id, id));
+    .where(eq(storeBrand.id, id));
   revalidatePath("/");
   return result;
 };
 
-export const deleteSize = async (id: string) => {
-  const result = await db.delete(storeSize).where(eq(storeSize.id, id));
+export const deleteBrand = async (id: string) => {
+  const result = await db.delete(storeBrand).where(eq(storeBrand.id, id));
   revalidatePath("/");
   return result;
 };

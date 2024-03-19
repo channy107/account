@@ -1,10 +1,9 @@
 "use client ";
 
 import { useState, useTransition } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import toast from "react-hot-toast";
-import { useParams, useRouter } from "next/navigation";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,32 +11,32 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ProductColumn } from "./ProductColumn";
 import { Button } from "@/components/ui/button";
-import { SizeColumn } from "./SizeColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
-import { deleteSize } from "@/actions/storeSize";
+import { deleteProduct } from "@/actions/storeProduct";
 
-interface Props {
-  data: SizeColumn;
+interface CellActionProps {
+  data: ProductColumn;
 }
 
-const CellAction = ({ data }: Props) => {
+const CellAction = ({ data }: CellActionProps) => {
   const router = useRouter();
-  const params = useParams<{ serviceName: string }>();
+  const params = useParams();
 
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`/admin/${params.serviceName}/size/${data.id}`);
+    router.push(`/admin/${params.serviceName}/product/${data.id}`);
   };
 
   const onDelete = async () => {
     startTransition(() => {
-      deleteSize(data.id)
+      deleteProduct(data.id)
         .then(() => {
           router.refresh();
-          toast.success("사이즈 삭제를 완료했습니다.");
+          toast.success("상품 삭제를 완료했습니다.");
         })
         .catch(() => {
           toast.error("문제가 발생했습니다.");

@@ -3,14 +3,14 @@
 import { ColumnDef } from "@tanstack/react-table";
 import CellAction from "./CellAction";
 
-export interface SizeColumn {
+export interface BrandColumn {
   id: string;
   name: string;
   value: string;
   createdAt: string;
 }
 
-export const columns: ColumnDef<SizeColumn>[] = [
+export const columns: ColumnDef<BrandColumn>[] = [
   {
     accessorKey: "name",
     minSize: 300,

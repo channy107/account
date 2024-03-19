@@ -1,7 +1,7 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
 const HOST = process.env.HOST;
-const REGION = process.env.NEXT_PUBLIC_AWS_S3_BUCKET_NAME;
+const REGION = process.env.NEXT_PUBLIC_AWS_REGION;
 const accessKeyId = process.env.ACCESS_KEY_ID!;
 const secretAccessKey = process.env.SECRET_ACCESS_KEY!;
 

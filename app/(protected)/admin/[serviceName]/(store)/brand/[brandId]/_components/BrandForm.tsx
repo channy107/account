@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { TSelectStoreSize } from "@/db/schema";
-import { createSize, updateSize } from "@/actions/storeSize";
+import { TSelectStoreBrand } from "@/db/schema";
+import { createBrand, updateBrand } from "@/actions/storeBrand";
 import { getServiceByName } from "@/actions/service";
 
 const formSchema = z.object({
@@ -29,13 +29,13 @@ const formSchema = z.object({
   value: z.string().min(1),
 });
 
-type SizeFormValues = z.infer<typeof formSchema>;
+type BrandFormValues = z.infer<typeof formSchema>;
 
 interface Props {
-  initialData?: TSelectStoreSize;
+  initialData?: TSelectStoreBrand;
 }
 
-const SizeForm = ({ initialData }: Props) => {
+const BrandForm = ({ initialData }: Props) => {
   const params = useParams<{ serviceName: string }>();
   const router = useRouter();
 
@@ -43,14 +43,14 @@ const SizeForm = ({ initialData }: Props) => {
 
   const title = initialData ? "수정하기" : "만들기";
   const description = initialData
-    ? "수정할 사이즈 정보를 넣어주세요."
-    : "새로 만들 사이즈의 정보를 넣어주세요.";
+    ? "수정할 브랜드 정보를 넣어주세요."
+    : "새로 만들 브랜드의 정보를 넣어주세요.";
   const toastMessage = initialData
-    ? "사이즈 수정을 완료했습니다."
-    : "새로운 사이즈를 만들었습니다.";
+    ? "브랜드 수정을 완료했습니다."
+    : "새로운 브랜드를 만들었습니다.";
   const action = initialData ? "수정 완료" : "만들기";
 
-  const form = useForm<SizeFormValues>({
+  const form = useForm<BrandFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       name: "",
@@ -58,13 +58,13 @@ const SizeForm = ({ initialData }: Props) => {
     },
   });
 
-  const onSubmit = async (data: SizeFormValues) => {
+  const onSubmit = async (data: BrandFormValues) => {
     startTransition(async () => {
       if (initialData) {
-        updateSize({ id: initialData.id, name: data.name, value: data.value })
+        updateBrand({ id: initialData.id, name: data.name, value: data.value })
           .then(() => {
             router.refresh();
-            router.push(`/admin/${params.serviceName}/size`);
+            router.push(`/admin/${params.serviceName}/brand`);
             toast.success(toastMessage);
           })
           .catch(() => {
@@ -73,14 +73,14 @@ const SizeForm = ({ initialData }: Props) => {
       } else {
         const service = await getServiceByName(params.serviceName);
         if (service) {
-          createSize({
+          createBrand({
             serviceId: service.id,
             name: data.name,
             value: data.value,
           })
             .then(() => {
               router.refresh();
-              router.push(`/admin/${params.serviceName}/size`);
+              router.push(`/admin/${params.serviceName}/brand`);
               toast.success(toastMessage);
             })
             .catch(() => {
@@ -160,4 +160,4 @@ const SizeForm = ({ initialData }: Props) => {
   );
 };
 
-export default SizeForm;
+export default BrandForm;

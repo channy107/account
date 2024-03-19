@@ -13,7 +13,7 @@ const s3Client = new S3Client({
 });
 
 export const uploadImage = async (formData: FormData) => {
-  const bannerName = formData.get("bannerName");
+  const bannerName = formData.get("name");
   const files = formData.getAll("file") as unknown as File[];
   if (files.length === 0) return;
 

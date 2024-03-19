@@ -28,7 +28,7 @@ const ImageUpload = ({ previewUrls, onDrop }: Props) => {
       >
         <input {...getInputProps()} />
         <p className="mt-1 text-sm text-blue-600">
-          "이미지를 드래그 하거나 클릭해주세요."
+          이미지를 드래그 하거나 클릭해주세요.
         </p>
       </div>
       <div className="mt-4 flex space-x-2 overflow-x-auto">
