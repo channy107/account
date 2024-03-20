@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { CategoryColumn } from "./CategoryColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { deleteCategory } from "@/actions/storeCategory";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface Props {
   data: CategoryColumn;
@@ -29,7 +30,7 @@ const CellAction = ({ data }: Props) => {
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`/admin/${params.serviceName}/category/${data.id}`);
+    router.push(`${ADMIN_STORE_ROUTES.CATEGORY}/${data.id}`);
   };
 
   const onDelete = async () => {

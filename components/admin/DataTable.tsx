@@ -110,7 +110,7 @@ const DataTable = <TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  결과가 없습니다.
                 </TableCell>
               </TableRow>
             )}

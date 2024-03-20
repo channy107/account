@@ -7,6 +7,7 @@ import {
   integer,
   uuid,
   boolean,
+  AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 
@@ -97,8 +98,6 @@ export type TSelectService = typeof service.$inferSelect;
 
 export const serviceRelations = relations(service, ({ many }) => ({
   serviceCategories: many(serviceCategory),
-  banners: many(storeBanner),
-  categories: many(storeCategory),
 }));
 
 export const serviceCategory = pgTable("serviceCategory", {
@@ -131,28 +130,19 @@ export const storeBanner = pgTable("banner", {
   images: text("images").array().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  serviceId: uuid("serviceId")
-    .notNull()
-    .references(() => service.id, { onDelete: "cascade" }),
 });
 
 export type TSelectBanner = typeof storeBanner.$inferSelect;
-
-export const storeBannerRelations = relations(storeBanner, ({ one }) => ({
-  service: one(service, {
-    fields: [storeBanner.serviceId],
-    references: [service.id],
-  }),
-}));
 
 export const storeCategory = pgTable("storeCategory", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  serviceId: uuid("serviceId")
-    .notNull()
-    .references(() => service.id, { onDelete: "cascade" }),
+  parentCategoryId: uuid("parentCategoryId").references(
+    (): AnyPgColumn => storeCategory.id,
+    { onDelete: "cascade" }
+  ),
 });
 
 export type TSelectStoreCategory = typeof storeCategory.$inferSelect;
@@ -160,10 +150,6 @@ export type TSelectStoreCategory = typeof storeCategory.$inferSelect;
 export const storeCategoryRelations = relations(
   storeCategory,
   ({ one, many }) => ({
-    service: one(service, {
-      fields: [storeCategory.serviceId],
-      references: [service.id],
-    }),
     products: many(storeProduct),
   })
 );
@@ -174,45 +160,31 @@ export const storeColor = pgTable("storeColor", {
   value: text("value").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  serviceId: uuid("serviceId")
-    .notNull()
-    .references(() => service.id, { onDelete: "cascade" }),
 });
 
 export type TSelectStoreColor = typeof storeColor.$inferSelect;
 
 export const storeColorRelations = relations(storeColor, ({ one, many }) => ({
-  service: one(service, {
-    fields: [storeColor.serviceId],
-    references: [service.id],
-  }),
   products: many(storeProduct),
 }));
 
 export const storeBrand = pgTable("storeBrand", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
-  value: text("value").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  serviceId: uuid("serviceId")
-    .notNull()
-    .references(() => service.id, { onDelete: "cascade" }),
 });
 
 export type TSelectStoreBrand = typeof storeBrand.$inferSelect;
 
 export const storeBrandRelations = relations(storeBrand, ({ one, many }) => ({
-  service: one(service, {
-    fields: [storeBrand.serviceId],
-    references: [service.id],
-  }),
   products: many(storeProduct),
 }));
 
-export const storeProduct = pgTable("storeProducts", {
+export const storeProduct = pgTable("storeProduct", {
   id: uuid("id").defaultRandom().notNull().primaryKey(),
   name: text("name").notNull(),
+  description: text("description"),
   price: integer("price").notNull(),
   isSale: boolean("isSale"),
   saleRate: integer("saleRate"),
@@ -221,9 +193,6 @@ export const storeProduct = pgTable("storeProducts", {
   images: text("images").array().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  serviceId: uuid("serviceId")
-    .notNull()
-    .references(() => service.id, { onDelete: "cascade" }),
   categoryId: uuid("categoryId")
     .notNull()
     .references(() => storeCategory.id, { onDelete: "cascade" }),
@@ -238,10 +207,6 @@ export const storeProduct = pgTable("storeProducts", {
 export type TSelectStoreProduct = typeof storeProduct.$inferSelect;
 
 export const storeProductsRelations = relations(storeProduct, ({ one }) => ({
-  service: one(service, {
-    fields: [storeProduct.serviceId],
-    references: [service.id],
-  }),
   category: one(storeCategory, {
     fields: [storeProduct.categoryId],
     references: [storeCategory.id],

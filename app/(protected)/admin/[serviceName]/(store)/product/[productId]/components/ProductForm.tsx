@@ -40,6 +40,7 @@ import { getServiceByName } from "@/actions/service";
 import { uploadImage } from "@/actions/imageUpload";
 import { createProduct, updateProduct } from "@/actions/storeProduct";
 import ImageUpload from "@/components/admin/ImageUpload";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -132,7 +133,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
             })
               .then(() => {
                 router.refresh();
-                router.push(`/admin/${params.serviceName}/product`);
+                router.push(`${ADMIN_STORE_ROUTES.PRODUCT}`);
                 toast.success(toastMessage);
               })
               .catch(() => {
@@ -142,7 +143,6 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
             const service = await getServiceByName(params.serviceName);
             if (service) {
               createProduct({
-                serviceId: service.id,
                 name: data.name,
                 price: data.price,
                 isSale: data.isSale || false,
@@ -155,7 +155,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
               })
                 .then(() => {
                   router.refresh();
-                  router.push(`/admin/${params.serviceName}/product`);
+                  router.push(`${ADMIN_STORE_ROUTES.PRODUCT}`);
                   toast.success(toastMessage);
                 })
                 .catch(() => {

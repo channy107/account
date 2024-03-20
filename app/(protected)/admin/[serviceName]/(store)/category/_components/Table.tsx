@@ -6,6 +6,7 @@ import Heading from "@/components/admin/Heading";
 import DataTable from "@/components/admin/DataTable";
 import { CategoryColumn, columns } from "./CategoryColumn";
 import { Button } from "@/components/ui/button";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface Props {
   data: CategoryColumn[];
@@ -19,9 +20,7 @@ const CategoryTable = ({ data }: Props) => {
       <div className="flex items-center justify-between">
         <Heading title={`카테고리 목록 (${data.length})`} />
         <Button
-          onClick={() =>
-            router.push(`/admin/${params.serviceName}/category/new`)
-          }
+          onClick={() => router.push(`${ADMIN_STORE_ROUTES.ADD_CATEGORY}`)}
         >
           <Plus className="mr-2 h-4 w-4" />
           만들기

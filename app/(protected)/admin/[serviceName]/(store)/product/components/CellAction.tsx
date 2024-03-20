@@ -15,6 +15,7 @@ import { ProductColumn } from "./ProductColumn";
 import { Button } from "@/components/ui/button";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { deleteProduct } from "@/actions/storeProduct";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface CellActionProps {
   data: ProductColumn;
@@ -28,7 +29,7 @@ const CellAction = ({ data }: CellActionProps) => {
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`/admin/${params.serviceName}/product/${data.id}`);
+    router.push(`${ADMIN_STORE_ROUTES.PRODUCT}/${data.id}`);
   };
 
   const onDelete = async () => {

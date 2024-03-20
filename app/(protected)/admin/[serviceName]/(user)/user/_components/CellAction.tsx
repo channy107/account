@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { UserColumn } from "./UserColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { deleteUser } from "@/actions/user";
+import { ADMIN_COMMON_ROUTES } from "@/routes";
 
 interface Props {
   data: UserColumn;
@@ -29,7 +30,7 @@ export const CellAction = ({ data }: Props) => {
   const [isPending, startTransition] = useTransition();
 
   const handleUserRole = () => {
-    router.push(`/admin/${params.serviceName}/user/${data.id}`);
+    router.push(`${ADMIN_COMMON_ROUTES.USER}/${data.id}`);
   };
 
   const onDelete = async () => {

@@ -4,6 +4,7 @@ import db from "@/db/drizzle";
 import { storeProduct } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 export const getProducts = async () => {
   const products = await db.query.storeProduct.findMany({
@@ -33,7 +34,6 @@ export const getProduct = async (id?: string) => {
 };
 
 export const createProduct = async ({
-  serviceId,
   name,
   price,
   isSale,
@@ -44,7 +44,6 @@ export const createProduct = async ({
   brandId,
   colorId,
 }: {
-  serviceId: string;
   name: string;
   price: number;
   isSale: boolean;
@@ -58,7 +57,6 @@ export const createProduct = async ({
   const result = await db
     .insert(storeProduct)
     .values({
-      serviceId,
       name,
       price,
       isSale,
@@ -71,7 +69,7 @@ export const createProduct = async ({
     })
     .returning();
 
-  revalidatePath("/");
+  revalidatePath(`${ADMIN_STORE_ROUTES.PRODUCT}`);
 
   return result;
 };
@@ -113,12 +111,16 @@ export const updateProduct = async ({
       brandId,
     })
     .where(eq(storeProduct.id, id));
-  revalidatePath("/");
+
+  revalidatePath(`${ADMIN_STORE_ROUTES.PRODUCT}`);
+
   return result;
 };
 
 export const deleteProduct = async (id: string) => {
   const result = await db.delete(storeProduct).where(eq(storeProduct.id, id));
-  revalidatePath("/");
+
+  revalidatePath(`${ADMIN_STORE_ROUTES.PRODUCT}`);
+
   return result;
 };

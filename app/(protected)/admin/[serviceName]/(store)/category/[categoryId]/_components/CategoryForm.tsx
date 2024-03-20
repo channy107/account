@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { TSelectStoreCategory } from "@/db/schema";
 import { createCategory, updateCategory } from "@/actions/storeCategory";
 import { getServiceByName } from "@/actions/service";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -62,7 +63,7 @@ const CategoryForm = ({ initialData }: Props) => {
         updateCategory({ id: initialData.id, name: data.name })
           .then(() => {
             router.refresh();
-            router.push(`/admin/${params.serviceName}/category`);
+            router.push(`${ADMIN_STORE_ROUTES.CATEGORY}`);
             toast.success(toastMessage);
           })
           .catch(() => {
@@ -71,10 +72,10 @@ const CategoryForm = ({ initialData }: Props) => {
       } else {
         const service = await getServiceByName(params.serviceName);
         if (service) {
-          createCategory({ serviceId: service.id, name: data.name })
+          createCategory({ name: data.name })
             .then(() => {
               router.refresh();
-              router.push(`/admin/${params.serviceName}/category`);
+              router.push(`${ADMIN_STORE_ROUTES.CATEGORY}`);
               toast.success(toastMessage);
             })
             .catch(() => {

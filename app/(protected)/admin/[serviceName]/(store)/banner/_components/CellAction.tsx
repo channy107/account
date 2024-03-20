@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { BannerColumn } from "./BannerColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { deleteBanner } from "@/actions/storeBanner";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface Props {
   data: BannerColumn;
@@ -29,7 +30,7 @@ const CellAction = ({ data }: Props) => {
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`/admin/${params.serviceName}/banner/${data.id}`);
+    router.push(`${ADMIN_STORE_ROUTES.BRAND}/${data.id}`);
   };
 
   const onDelete = async () => {

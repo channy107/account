@@ -26,6 +26,7 @@ import { createColor, updateColor } from "@/actions/storeColor";
 import { getServiceByName } from "@/actions/service";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { PopoverContent } from "@radix-ui/react-popover";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -72,7 +73,7 @@ const ColorForm = ({ initialData }: Props) => {
         updateColor({ id: initialData.id, name: data.name, value: data.value })
           .then(() => {
             router.refresh();
-            router.push(`/admin/${params.serviceName}/color`);
+            router.push(`${ADMIN_STORE_ROUTES.COLOR}`);
             toast.success(toastMessage);
           })
           .catch(() => {
@@ -82,13 +83,12 @@ const ColorForm = ({ initialData }: Props) => {
         const service = await getServiceByName(params.serviceName);
         if (service) {
           createColor({
-            serviceId: service.id,
             name: data.name,
             value: data.value,
           })
             .then(() => {
               router.refresh();
-              router.push(`/admin/${params.serviceName}/color`);
+              router.push(`${ADMIN_STORE_ROUTES.COLOR}`);
               toast.success(toastMessage);
             })
             .catch(() => {

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { ColorColumn } from "./ColorColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { deleteColor } from "@/actions/storeColor";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface Props {
   data: ColorColumn;
@@ -29,7 +30,7 @@ const CellAction = ({ data }: Props) => {
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`/admin/${params.serviceName}/color/${data.id}`);
+    router.push(`${ADMIN_STORE_ROUTES.CATEGORY}/${data.id}`);
   };
 
   const onDelete = async () => {

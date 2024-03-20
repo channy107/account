@@ -10,7 +10,7 @@
     "lint": "next lint",
     "generate": "drizzle-kit generate:pg",
     "push": "drizzle-kit push:pg",
-    "drizzle-studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@auth/core": "^0.28.0",

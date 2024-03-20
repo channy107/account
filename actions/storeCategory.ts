@@ -4,6 +4,7 @@ import db from "@/db/drizzle";
 import { storeCategory } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 export const getCategories = async () => {
   const categories = await db.query.storeCategory.findMany({
@@ -22,22 +23,15 @@ export const getCategory = async (id?: string) => {
   return response;
 };
 
-export const createCategory = async ({
-  serviceId,
-  name,
-}: {
-  serviceId: string;
-  name: string;
-}) => {
+export const createCategory = async ({ name }: { name: string }) => {
   const result = await db
     .insert(storeCategory)
     .values({
-      serviceId,
       name,
     })
     .returning();
 
-  revalidatePath("/");
+  revalidatePath(`${ADMIN_STORE_ROUTES.CATEGORY}`);
 
   return result;
 };
@@ -55,12 +49,16 @@ export const updateCategory = async ({
       name,
     })
     .where(eq(storeCategory.id, id));
-  revalidatePath("/");
+
+  revalidatePath(`${ADMIN_STORE_ROUTES.CATEGORY}`);
+
   return result;
 };
 
 export const deleteCategory = async (id: string) => {
   const result = await db.delete(storeCategory).where(eq(storeCategory.id, id));
-  revalidatePath("/");
+
+  revalidatePath(`${ADMIN_STORE_ROUTES.CATEGORY}`);
+
   return result;
 };

@@ -23,6 +23,7 @@ import { createBanner, updateBanner } from "@/actions/storeBanner";
 import { getServiceByName } from "@/actions/service";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { uploadImage } from "@/actions/imageUpload";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -90,7 +91,7 @@ const BannerForm = ({ initialData }: Props) => {
             })
               .then(() => {
                 router.refresh();
-                router.push(`/admin/${params.serviceName}/banner`);
+                router.push(`${ADMIN_STORE_ROUTES.BANNER}`);
                 toast.success(toastMessage);
               })
               .catch(() => {
@@ -100,13 +101,12 @@ const BannerForm = ({ initialData }: Props) => {
             const service = await getServiceByName(params.serviceName);
             if (service) {
               createBanner({
-                serviceId: service.id,
                 name: data.name,
                 images: imageUrls,
               })
                 .then(() => {
                   router.refresh();
-                  router.push(`/admin/${params.serviceName}/banner`);
+                  router.push(`${ADMIN_STORE_ROUTES.BANNER}`);
                   toast.success(toastMessage);
                 })
                 .catch(() => {

@@ -6,6 +6,7 @@ import Heading from "@/components/admin/Heading";
 import DataTable from "@/components/admin/DataTable";
 import { BrandColumn, columns } from "./BrandColumn";
 import { Button } from "@/components/ui/button";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface Props {
   data: BrandColumn[];
@@ -18,9 +19,7 @@ const BrandTable = ({ data }: Props) => {
     <>
       <div className="flex items-center justify-between">
         <Heading title={`브랜드 목록 (${data.length})`} />
-        <Button
-          onClick={() => router.push(`/admin/${params.serviceName}/brand/new`)}
-        >
+        <Button onClick={() => router.push(`${ADMIN_STORE_ROUTES.ADD_BRAND}`)}>
           <Plus className="mr-2 h-4 w-4" />
           만들기
         </Button>

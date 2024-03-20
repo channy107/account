@@ -4,6 +4,7 @@ import db from "@/db/drizzle";
 import { storeColor } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 export const getColors = async () => {
   const colors = await db.query.storeColor.findMany({
@@ -23,24 +24,21 @@ export const getColor = async (id?: string) => {
 };
 
 export const createColor = async ({
-  serviceId,
   name,
   value,
 }: {
-  serviceId: string;
   name: string;
   value: string;
 }) => {
   const result = await db
     .insert(storeColor)
     .values({
-      serviceId,
       name,
       value,
     })
     .returning();
 
-  revalidatePath("/");
+  revalidatePath(`${ADMIN_STORE_ROUTES.COLOR}`);
 
   return result;
 };
@@ -61,12 +59,16 @@ export const updateColor = async ({
       value,
     })
     .where(eq(storeColor.id, id));
-  revalidatePath("/");
+
+  revalidatePath(`${ADMIN_STORE_ROUTES.COLOR}`);
+
   return result;
 };
 
 export const deleteColor = async (id: string) => {
   const result = await db.delete(storeColor).where(eq(storeColor.id, id));
-  revalidatePath("/");
+
+  revalidatePath(`${ADMIN_STORE_ROUTES.COLOR}`);
+
   return result;
 };

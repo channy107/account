@@ -4,8 +4,6 @@ import ColorTable from "./_components/Table";
 import { ColorColumn } from "./_components/ColorColumn";
 import { getColors } from "@/actions/storeColor";
 
-export const revalidate = 0;
-
 const ColorPage = async () => {
   const colors = await getColors();
 

@@ -4,6 +4,7 @@ import db from "@/db/drizzle";
 import { storeBanner } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 export const getBanners = async () => {
   const banners = await db.query.storeBanner.findMany({
@@ -23,24 +24,21 @@ export const getBanner = async (id?: string) => {
 };
 
 export const createBanner = async ({
-  serviceId,
   name,
   images,
 }: {
-  serviceId: string;
   name: string;
   images: string[];
 }) => {
   const result = await db
     .insert(storeBanner)
     .values({
-      serviceId,
       name,
       images,
     })
     .returning();
 
-  revalidatePath("/");
+  revalidatePath(`${ADMIN_STORE_ROUTES.BANNER}`);
 
   return result;
 };
@@ -61,12 +59,12 @@ export const updateBanner = async ({
       images,
     })
     .where(eq(storeBanner.id, id));
-  revalidatePath("/");
+  revalidatePath(`${ADMIN_STORE_ROUTES.BANNER}`);
   return result;
 };
 
 export const deleteBanner = async (id: string) => {
   const result = await db.delete(storeBanner).where(eq(storeBanner.id, id));
-  revalidatePath("/");
+  revalidatePath(`${ADMIN_STORE_ROUTES.BANNER}`);
   return result;
 };

@@ -3,8 +3,6 @@ import { BrandColumn } from "./_components/BrandColumn";
 import BrandTable from "./_components/Table";
 import { getBrands } from "@/actions/storeBrand";
 
-export const revalidate = 0;
-
 const BrandPage = async () => {
   const brands = await getBrands();
 
@@ -12,7 +10,6 @@ const BrandPage = async () => {
     return {
       id: brand.id,
       name: brand.name,
-      value: brand.value,
       createdAt: format(brand.createdAt, "MMMM do, yyyy"),
     };
   });

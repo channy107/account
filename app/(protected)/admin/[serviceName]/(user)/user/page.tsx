@@ -3,8 +3,6 @@ import { UserColumn } from "./_components/UserColumn";
 import UserTable from "./_components/Table";
 import { getUsers } from "@/actions/user";
 
-export const revalidate = 0;
-
 const UserListPage = async () => {
   const users = await getUsers();
 

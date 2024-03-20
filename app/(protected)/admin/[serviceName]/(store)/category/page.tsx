@@ -3,8 +3,6 @@ import { CategoryColumn } from "./_components/CategoryColumn";
 import CategoryTable from "./_components/Table";
 import { getCategories } from "@/actions/storeCategory";
 
-export const revalidate = 0;
-
 const CategoryPage = async () => {
   const categories = await getCategories();
 

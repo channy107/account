@@ -31,6 +31,7 @@ import Heading from "@/components/admin/Heading";
 
 import { deleteUser, updateUser } from "@/actions/user";
 import { TSelectUser, UserRole } from "@/db/schema";
+import { ADMIN_COMMON_ROUTES } from "@/routes";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -42,7 +43,6 @@ type UserFormValues = z.infer<typeof formSchema>;
 interface Props {
   user?: TSelectUser;
 }
-export const revalidate = 0;
 
 const UserForm = ({ user }: Props) => {
   const params = useParams<{ serviceName: string }>();
@@ -66,7 +66,7 @@ const UserForm = ({ user }: Props) => {
       updateUser({ id: user.id, role: data.role as UserRole })
         .then(() => {
           router.refresh();
-          router.push(`/admin/${params.serviceName}/user`);
+          router.push(`${ADMIN_COMMON_ROUTES.USER}`);
           toast.success("역할 변경이 완료되었습니다.");
         })
         .catch(() => {
@@ -81,7 +81,7 @@ const UserForm = ({ user }: Props) => {
       deleteUser(user.id)
         .then(() => {
           router.refresh();
-          router.push(`/admin/${params.serviceName}/user`);
+          router.push(`${ADMIN_COMMON_ROUTES.USER}`);
           toast.success("유저 삭제를 완료했습니다.");
         })
         .catch(() => {

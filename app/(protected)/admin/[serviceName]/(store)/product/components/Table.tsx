@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ProductColumn, columns } from "./ProductColumn";
 import Heading from "@/components/admin/Heading";
 import DataTable from "@/components/admin/DataTable";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface ProductClientProps {
   data: ProductColumn[];
@@ -21,9 +22,7 @@ const ProductTable = ({ data }: ProductClientProps) => {
       <div className="flex items-center justify-between">
         <Heading title={`상품 목록 (${data.length})`} />
         <Button
-          onClick={() =>
-            router.push(`/admin/${params.serviceName}/product/new`)
-          }
+          onClick={() => router.push(`${ADMIN_STORE_ROUTES.ADD_PRODUCT}`)}
         >
           <Plus className="mr-2 h-4 w-4" />
           만들기

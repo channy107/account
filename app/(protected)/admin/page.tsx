@@ -1,5 +1,6 @@
+import { ADMIN_ROUTES } from "@/routes";
 import { redirect } from "next/navigation";
 
 export default function Home() {
-  redirect("/admin/common");
+  redirect(`${ADMIN_ROUTES.COMMON}`);
 }

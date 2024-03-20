@@ -6,7 +6,6 @@ import CellAction from "./CellAction";
 export interface BrandColumn {
   id: string;
   name: string;
-  value: string;
   createdAt: string;
 }
 
@@ -16,12 +15,6 @@ export const columns: ColumnDef<BrandColumn>[] = [
     minSize: 300,
     maxSize: 500,
     header: "이름",
-  },
-  {
-    accessorKey: "value",
-    minSize: 300,
-    maxSize: 500,
-    header: "값",
   },
   {
     accessorKey: "createdAt",

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { TSelectServiceCategory } from "@/db/schema";
+import { ADMIN_BASE } from "@/routes";
 
 interface Props {
   categories: TSelectServiceCategory[];
@@ -16,7 +17,7 @@ const MainNav = ({ categories }: Props) => {
   const serviceCategory = pathname.split("/").pop();
 
   const routes = categories.map((category) => ({
-    href: `/admin/${params.serviceName}/${category.name}`,
+    href: `${ADMIN_BASE}/${params.serviceName}/${category.name}`,
     label: category.label,
     active: serviceCategory === category.name,
   }));

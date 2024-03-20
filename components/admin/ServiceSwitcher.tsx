@@ -27,6 +27,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { TSelectService } from "@/db/schema";
+import { ADMIN_BASE } from "@/routes";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -53,7 +54,7 @@ const ServiceSwitcher = ({ className, items = [] }: StoreSwitcherProps) => {
 
   const onServiceSelect = (service: { value: string; label: string }) => {
     setOpen(false);
-    router.push(`/admin/${service.value}`);
+    router.push(`${ADMIN_BASE}/${service.value}`);
   };
 
   return (

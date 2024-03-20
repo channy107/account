@@ -3,8 +3,6 @@ import { BannerColumn } from "./_components/BannerColumn";
 import BannerTable from "./_components/Table";
 import { getBanners } from "@/actions/storeBanner";
 
-export const revalidate = 0;
-
 const BannerPage = async () => {
   const banners = await getBanners();
 

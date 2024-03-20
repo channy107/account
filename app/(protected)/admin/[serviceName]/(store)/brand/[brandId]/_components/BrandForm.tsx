@@ -23,10 +23,10 @@ import { Input } from "@/components/ui/input";
 import { TSelectStoreBrand } from "@/db/schema";
 import { createBrand, updateBrand } from "@/actions/storeBrand";
 import { getServiceByName } from "@/actions/service";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 const formSchema = z.object({
   name: z.string().min(1),
-  value: z.string().min(1),
 });
 
 type BrandFormValues = z.infer<typeof formSchema>;
@@ -54,17 +54,16 @@ const BrandForm = ({ initialData }: Props) => {
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       name: "",
-      value: "",
     },
   });
 
   const onSubmit = async (data: BrandFormValues) => {
     startTransition(async () => {
       if (initialData) {
-        updateBrand({ id: initialData.id, name: data.name, value: data.value })
+        updateBrand({ id: initialData.id, name: data.name })
           .then(() => {
             router.refresh();
-            router.push(`/admin/${params.serviceName}/brand`);
+            router.push(`${ADMIN_STORE_ROUTES.BRAND}`);
             toast.success(toastMessage);
           })
           .catch(() => {
@@ -74,13 +73,11 @@ const BrandForm = ({ initialData }: Props) => {
         const service = await getServiceByName(params.serviceName);
         if (service) {
           createBrand({
-            serviceId: service.id,
             name: data.name,
-            value: data.value,
           })
             .then(() => {
               router.refresh();
-              router.push(`/admin/${params.serviceName}/brand`);
+              router.push(`${ADMIN_STORE_ROUTES.BRAND}`);
               toast.success(toastMessage);
             })
             .catch(() => {
@@ -117,23 +114,6 @@ const BrandForm = ({ initialData }: Props) => {
                     <Input
                       disabled={isPending}
                       placeholder="이름을 입력해주세요."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="value"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>값</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="값을 입력해주세요."
                       {...field}
                     />
                   </FormControl>

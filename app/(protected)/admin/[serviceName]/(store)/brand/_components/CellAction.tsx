@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { BrandColumn } from "./BrandColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
 import { deleteBrand } from "@/actions/storeBrand";
+import { ADMIN_STORE_ROUTES } from "@/routes";
 
 interface Props {
   data: BrandColumn;
@@ -29,7 +30,7 @@ const CellAction = ({ data }: Props) => {
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`/admin/${params.serviceName}/brand/${data.id}`);
+    router.push(`${ADMIN_STORE_ROUTES.BRAND}/${data.id}`);
   };
 
   const onDelete = async () => {
