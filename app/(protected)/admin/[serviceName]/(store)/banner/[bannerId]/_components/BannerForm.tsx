@@ -1,10 +1,10 @@
 "use client";
 
 import * as z from "zod";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import Heading from "@/components/admin/Heading";
@@ -20,17 +20,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { createBanner, updateBanner } from "@/actions/storeBanner";
-import { getServiceByName } from "@/actions/service";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { uploadImage } from "@/actions/imageUpload";
 import { ADMIN_STORE_ROUTES } from "@/routes";
-
-const formSchema = z.object({
-  name: z.string().min(1),
-  images: z.instanceof(File).array(),
-});
-
-type BannerFormValues = z.infer<typeof formSchema>;
+import { bannerFormSchema } from "@/schemas/admin";
 
 interface Props {
   initialData?: { id: string; name: string; images: string[] };
@@ -39,87 +32,86 @@ interface Props {
 const BannerForm = ({ initialData }: Props) => {
   const initialPreviewUrls = initialData ? initialData.images : [];
   const [previewUrls, setPreviewUrls] = useState<string[]>(initialPreviewUrls);
-  const params = useParams<{ serviceName: string }>();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const [isPending, startTransition] = useTransition();
-
-  const title = initialData ? "수정하기" : "만들기";
-  const description = initialData
-    ? "수정할 배너 정보를 넣어주세요."
-    : "새로 만들 배너의 정보를 넣어주세요.";
+  const title = initialData ? "배너 수정하기" : "배너 만들기";
   const toastMessage = initialData
     ? "배너 수정을 완료했습니다."
     : "새로운 배너를 만들었습니다.";
   const action = initialData ? "수정 완료" : "만들기";
 
-  const form = useForm<BannerFormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof bannerFormSchema>>({
+    resolver: zodResolver(bannerFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: initialData ? initialData.name : "",
       images: [],
     },
   });
 
-  const { setValue } = form;
+  const { watch, setValue, clearErrors, setError } = form;
+  const currentImages = watch("images");
 
   const onDrop = async (acceptedFiles: File[]) => {
     setValue("images", acceptedFiles);
     setPreviewUrls(() =>
       acceptedFiles.map((file) => URL.createObjectURL(file))
     );
+    clearErrors("images");
   };
 
-  const onSubmit = async (data: BannerFormValues) => {
-    startTransition(async () => {
-      const formData = new FormData();
-      data.images.forEach((file) => {
-        formData.append("name", data.name);
-        formData.append("file", file, file.name);
+  const onDelete = (index: number) => {
+    const newPreviewUrls = previewUrls.filter((_, idx) => idx !== index);
+    const newImages = currentImages.filter((_, idx) => idx !== index);
+
+    if (newImages.length === 0) {
+      setError("images", {
+        type: "required",
+        message: "상품 이미지를 업로드해주세요.",
       });
-      await uploadImage(formData)
-        .then(async () => {
-          const imageUrls = data.images.map(
-            (image) =>
-              `${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL}/${data.name}/${image.name}`
-          );
-          if (initialData) {
-            updateBanner({
-              id: initialData.id,
-              name: data.name,
-              images: imageUrls,
-            })
-              .then(() => {
-                router.refresh();
-                router.push(`${ADMIN_STORE_ROUTES.BANNER}`);
-                toast.success(toastMessage);
-              })
-              .catch(() => {
-                toast.error("문제가 발생 하였습니다.");
-              });
-          } else {
-            const service = await getServiceByName(params.serviceName);
-            if (service) {
-              createBanner({
-                name: data.name,
-                images: imageUrls,
-              })
-                .then(() => {
-                  router.refresh();
-                  router.push(`${ADMIN_STORE_ROUTES.BANNER}`);
-                  toast.success(toastMessage);
-                })
-                .catch(() => {
-                  toast.error("문제가 발생 하였습니다.");
-                });
-            }
-          }
-        })
-        .catch((error) => {
-          toast.error(error.message);
-          console.error("error", error);
-        });
+    }
+
+    setValue("images", newImages);
+    setPreviewUrls(newPreviewUrls);
+  };
+
+  const onSubmit = async (data: z.infer<typeof bannerFormSchema>) => {
+    const formData = new FormData();
+    const imageUrls = data.images.map(
+      (image) =>
+        `${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL}/${data.name}/${image.name}`
+    );
+
+    data.images.forEach((file) => {
+      formData.append("name", data.name);
+      formData.append("file", file, file.name);
     });
+
+    try {
+      setLoading(true);
+      await uploadImage(formData);
+
+      if (initialData) {
+        updateBanner({
+          id: initialData.id,
+          name: data.name,
+          images: imageUrls,
+        });
+      } else {
+        createBanner({
+          name: data.name,
+          images: imageUrls,
+        });
+      }
+      router.refresh();
+      router.push(`${ADMIN_STORE_ROUTES.BANNER}`);
+      toast.success(toastMessage);
+    } catch {
+      toast.error("문제가 발생 하였습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onCancel = () => {
@@ -128,16 +120,16 @@ const BannerForm = ({ initialData }: Props) => {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <Heading title={title} description={description} />
+      <div className="flex items-center justify-center">
+        <Heading title={title} />
       </div>
       <Separator />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full"
+          className="flex flex-col items-center first-letter:space-y-8 w-full"
         >
-          <div className="w-1/2">
+          <div className="flex flex-col gap-5 w-[500px]">
             <FormField
               control={form.control}
               name="name"
@@ -146,7 +138,7 @@ const BannerForm = ({ initialData }: Props) => {
                   <FormLabel>이름</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
+                      disabled={loading}
                       placeholder="이름을 입력해주세요."
                       {...field}
                     />
@@ -162,25 +154,30 @@ const BannerForm = ({ initialData }: Props) => {
                 <FormItem className="my-3">
                   <FormLabel>배너 이미지</FormLabel>
                   <FormControl>
-                    <ImageUpload previewUrls={previewUrls} onDrop={onDrop} />
+                    <ImageUpload
+                      previewUrls={previewUrls}
+                      onDrop={onDrop}
+                      onDelete={onDelete}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-
-          <Button
-            variant={"secondary"}
-            className="ml-auto mr-2"
-            onClick={onCancel}
-            type="button"
-          >
-            취소
-          </Button>
-          <Button disabled={isPending} className="ml-auto" type="submit">
-            {action}
-          </Button>
+          <div>
+            <Button
+              variant={"secondary"}
+              className="ml-auto mr-2"
+              onClick={onCancel}
+              type="button"
+            >
+              취소
+            </Button>
+            <Button disabled={loading} className="ml-auto" type="submit">
+              {action}
+            </Button>
+          </div>
         </form>
       </Form>
       <Separator />

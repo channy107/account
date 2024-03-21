@@ -30,7 +30,7 @@ const CellAction = ({ data }: Props) => {
   const [isPending, startTransition] = useTransition();
 
   const onUpdate = () => {
-    router.push(`${ADMIN_STORE_ROUTES.CATEGORY}/${data.id}`);
+    router.push(`${ADMIN_STORE_ROUTES.COLOR}/${data.id}`);
   };
 
   const onDelete = async () => {

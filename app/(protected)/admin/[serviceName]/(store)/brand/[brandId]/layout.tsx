@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import FullScreenLoader from "@/components/common/FullScreenLoader";
+import FullScreenLoader from "@/components/shared/FullScreenLoader";
 
 export default async function BrandLayout({
   children,

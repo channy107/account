@@ -7,7 +7,7 @@ export type ProductColumn = {
   id: string;
   name: string;
   price: string;
-  isSale: boolean | null;
+  brand: string;
   saleRate: number | null;
   images: string[];
   size: string;
@@ -26,10 +26,6 @@ export const columns: ColumnDef<ProductColumn>[] = [
     header: "브랜드",
   },
   {
-    accessorKey: "isSale",
-    header: "할인여부",
-  },
-  {
     accessorKey: "saleRate",
     header: "할인율",
   },
@@ -44,15 +40,6 @@ export const columns: ColumnDef<ProductColumn>[] = [
   {
     accessorKey: "color",
     header: "색상",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-x-2">
-        {row.original.color}
-        <div
-          className="h-6 w-6 rounded-full border"
-          style={{ backgroundColor: row.original.color }}
-        />
-      </div>
-    ),
   },
   {
     accessorKey: "createdAt",
@@ -60,6 +47,7 @@ export const columns: ColumnDef<ProductColumn>[] = [
   },
   {
     id: "actions",
+    size: 50,
     cell: ({ row }) => <CellAction data={row.original} />,
   },
 ];

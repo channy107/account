@@ -3,13 +3,14 @@
 import { ColumnDef } from "@tanstack/react-table";
 import CellAction from "./CellAction";
 
-export interface BannerColumn {
+export interface SizeColumn {
   id: string;
   name: string;
+  value: string;
   createdAt: string;
 }
 
-export const columns: ColumnDef<BannerColumn>[] = [
+export const columns: ColumnDef<SizeColumn>[] = [
   {
     accessorKey: "name",
     minSize: 300,
@@ -17,9 +18,15 @@ export const columns: ColumnDef<BannerColumn>[] = [
     header: "이름",
   },
   {
-    accessorKey: "createdAt",
-    minSize: 400,
+    accessorKey: "value",
+    minSize: 300,
     maxSize: 500,
+    header: "값",
+  },
+  {
+    accessorKey: "createdAt",
+    minSize: 200,
+    maxSize: 300,
     header: "생성날짜",
   },
   {

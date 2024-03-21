@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 import db from "@/db/drizzle";
-import { RegisterSchema } from "@/schemas";
+import { RegisterSchema } from "@/schemas/auth";
 import { getUserByEmail } from "@/data/user";
 import { user, verificationToken } from "@/db/schema";
 import { generateVerificationToken } from "@/lib/tokens";

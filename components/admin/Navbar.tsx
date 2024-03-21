@@ -1,7 +1,7 @@
 import StoreSwitcher from "@/components/admin/ServiceSwitcher";
 import MainNav from "@/components/admin/MainNav";
 import { getCategories, getServices } from "@/actions/service";
-import LogoutButton from "@/components/common/LogoutButton";
+import LogoutButton from "@/components/shared/LogoutButton";
 
 interface Props {
   serviceName: string;

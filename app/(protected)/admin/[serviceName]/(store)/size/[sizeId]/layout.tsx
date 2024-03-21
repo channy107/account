@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import FullScreenLoader from "@/components/shared/FullScreenLoader";
 
-export default async function ColorLayout({
+export default async function SizeLayout({
   children,
 }: {
   children: React.ReactNode;

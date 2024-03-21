@@ -20,47 +20,49 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { TSelectStoreBrand } from "@/db/schema";
-import { createBrand, updateBrand } from "@/actions/storeBrand";
+import { TSelectStoreSize } from "@/db/schema";
 import { ADMIN_STORE_ROUTES } from "@/routes";
-import { brandFormSchema } from "@/schemas/admin";
+import { createSize, updateSize } from "@/actions/storeSize";
+import { sizeFormSchema } from "@/schemas/admin";
 
 interface Props {
-  initialData?: TSelectStoreBrand;
+  initialData?: TSelectStoreSize;
 }
 
-const BrandForm = ({ initialData }: Props) => {
+const ColorForm = ({ initialData }: Props) => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "브랜드 수정하기" : "브랜드 만들기";
+  const title = initialData ? "사이즈 수정하기" : "사이즈 만들기";
+
   const toastMessage = initialData
-    ? "브랜드 수정을 완료했습니다."
-    : "새로운 브랜드를 만들었습니다.";
+    ? "사이즈 수정을 완료했습니다."
+    : "새로운 사이즈를 만들었습니다.";
   const action = initialData ? "수정 완료" : "만들기";
 
-  const form = useForm<z.infer<typeof brandFormSchema>>({
-    resolver: zodResolver(brandFormSchema),
-    mode: "onChange",
+  const form = useForm<z.infer<typeof sizeFormSchema>>({
+    resolver: zodResolver(sizeFormSchema),
     defaultValues: initialData || {
       name: "",
+      value: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof brandFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof sizeFormSchema>) => {
     try {
+      setLoading(true);
       if (initialData) {
-        setLoading(true);
-        updateBrand({ id: initialData.id, name: data.name });
+        updateSize({ id: initialData.id, name: data.name, value: data.value });
       } else {
-        createBrand({
+        createSize({
           name: data.name,
+          value: data.value,
         });
       }
 
       router.refresh();
-      router.push(`${ADMIN_STORE_ROUTES.BRAND}`);
+      router.push(`${ADMIN_STORE_ROUTES.SIZE}`);
       toast.success(toastMessage);
     } catch (error) {
       toast.error("문제가 발생 하였습니다.");
@@ -94,7 +96,24 @@ const BrandForm = ({ initialData }: Props) => {
                   <FormControl>
                     <Input
                       disabled={loading}
-                      placeholder="이름을 입력해주세요."
+                      placeholder="ex) S or L "
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>사이즈</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={loading}
+                      placeholder="ex) 90-95"
                       {...field}
                     />
                   </FormControl>
@@ -123,4 +142,4 @@ const BrandForm = ({ initialData }: Props) => {
   );
 };
 
-export default BrandForm;
+export default ColorForm;

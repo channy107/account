@@ -20,9 +20,9 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/auth/FormError";
 import { CardWrapper } from "@/components/auth/CardWrapper";
 import { login } from "@/actions/login";
-import { LoginSchema } from "@/schemas";
+import { LoginSchema } from "@/schemas/auth";
 import { FormSuccess } from "@/components/auth/FormSuccess";
-import ConfirmButton from "@/components/common/ConfirmButton";
+import ConfirmButton from "@/components/shared/ConfirmButton";
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();

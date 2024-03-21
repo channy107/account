@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 
 import { getUserByEmail } from "@/data/user";
 import { getPasswordResetTokenByToken } from "@/data/passwordResetToken";
-import { NewPasswordSchema } from "@/schemas";
+import { NewPasswordSchema } from "@/schemas/auth";
 import { passwordResetToken, user } from "@/db/schema";
 import db from "@/db/drizzle";
 

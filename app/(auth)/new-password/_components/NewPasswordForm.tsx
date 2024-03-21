@@ -19,9 +19,9 @@ import { CardWrapper } from "@/components/auth/CardWrapper";
 import { FormError } from "@/components/auth/FormError";
 import { FormSuccess } from "@/components/auth/FormSuccess";
 import { Button } from "@/components/ui/button";
-import { NewPasswordSchema } from "@/schemas";
+import { NewPasswordSchema } from "@/schemas/auth";
 import { newPassword } from "@/actions/newPassword";
-import ConfirmButton from "@/components/common/ConfirmButton";
+import ConfirmButton from "@/components/shared/ConfirmButton";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();

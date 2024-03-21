@@ -33,8 +33,7 @@ export const columns: ColumnDef<ColorColumn>[] = [
   },
   {
     id: "actions",
-    minSize: 50,
-    maxSize: 50,
+    size: 50,
     cell: ({ row }) => <CellAction data={row.original} />,
   },
 ];

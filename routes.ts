@@ -18,6 +18,8 @@ export const ADMIN_STORE_ROUTES = {
   ADD_BANNER: `${ADMIN_ROUTES.STORE}/banner/new`,
   COLOR: `${ADMIN_ROUTES.STORE}/color`,
   ADD_COLOR: `${ADMIN_ROUTES.STORE}/color/new`,
+  SIZE: `${ADMIN_ROUTES.STORE}/size`,
+  ADD_SIZE: `${ADMIN_ROUTES.STORE}/size/new`,
   CATEGORY: `${ADMIN_ROUTES.STORE}/category`,
   ADD_CATEGORY: `${ADMIN_ROUTES.STORE}/category/new`,
   BRAND: `${ADMIN_ROUTES.STORE}/brand`,

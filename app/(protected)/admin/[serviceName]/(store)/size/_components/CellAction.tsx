@@ -13,13 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { CategoryColumn } from "./CategoryColumn";
+import { SizeColumn } from "./SizeColumn";
 import { AlertModal } from "@/components/modals/AlertModal";
-import { deleteCategory } from "@/actions/storeCategory";
 import { ADMIN_STORE_ROUTES } from "@/routes";
+import { deleteSize } from "@/actions/storeSize";
 
 interface Props {
-  data: CategoryColumn;
+  data: SizeColumn;
 }
 
 const CellAction = ({ data }: Props) => {
@@ -28,12 +28,16 @@ const CellAction = ({ data }: Props) => {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  const onUpdate = () => {
+    router.push(`${ADMIN_STORE_ROUTES.SIZE}/${data.id}`);
+  };
+
   const onDelete = async () => {
     startTransition(() => {
-      deleteCategory(data.id)
+      deleteSize(data.id)
         .then(() => {
           router.refresh();
-          toast.success("카테고리 삭제를 완료했습니다.");
+          toast.success("사이즈 삭제를 완료했습니다.");
         })
         .catch(() => {
           toast.error("문제가 발생했습니다.");
@@ -60,6 +64,10 @@ const CellAction = ({ data }: Props) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={onUpdate}>
+            <Edit className="mr-2 h-4 w-4" />
+            수정
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
             <Trash className="mr-2 h-4 w-4" />
             삭제

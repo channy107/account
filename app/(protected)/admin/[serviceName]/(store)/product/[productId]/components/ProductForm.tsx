@@ -1,10 +1,10 @@
 "use client";
 
 import * as z from "zod";
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import Heading from "@/components/admin/Heading";
@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,147 +27,142 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   TSelectStoreBrand,
   TSelectStoreCategory,
   TSelectStoreColor,
   TSelectStoreProduct,
+  TSelectStoreSize,
 } from "@/db/schema";
-import { getServiceByName } from "@/actions/service";
 import { uploadImage } from "@/actions/imageUpload";
 import { createProduct, updateProduct } from "@/actions/storeProduct";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { ADMIN_STORE_ROUTES } from "@/routes";
+import MultiSelect from "@/components/admin/MultiSelect";
+import { productFormSchema } from "@/schemas/admin";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-  price: z.coerce.number().min(1),
-  images: z.instanceof(File).array(),
-  brandId: z.string().min(1),
-  categoryId: z.string().min(1),
-  colorId: z.string().min(1),
-  size: z.string().min(1),
-  isSale: z.boolean().default(false).optional(),
-  saleRate: z.coerce.number().default(0).optional(),
-});
-
-type ProductFormValues = z.infer<typeof formSchema>;
+interface ICategory extends TSelectStoreCategory {
+  fullCategory: string;
+}
 
 interface Props {
   initialData?: TSelectStoreProduct;
-  categories: TSelectStoreCategory[];
+  categories: ICategory[];
   brands: TSelectStoreBrand[];
+  sizes: TSelectStoreSize[];
   colors: TSelectStoreColor[];
 }
 
-const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
+const ProjectForm = ({
+  initialData,
+  categories,
+  sizes,
+  brands,
+  colors,
+}: Props) => {
   const initialPreviewUrls = initialData ? initialData.images : [];
   const [previewUrls, setPreviewUrls] = useState<string[]>(initialPreviewUrls);
-  const params = useParams<{ serviceName: string }>();
   const router = useRouter();
 
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "수정하기" : "만들기";
-  const description = initialData
-    ? "수정할 상품 이름을 넣어주세요."
-    : "새로 만들 상품의 이름을 넣어주세요.";
+  const title = initialData ? "상품 수정하기" : "상품 만들기";
   const toastMessage = initialData
     ? "상품 수정을 완료했습니다."
     : "새로운 상품을 만들었습니다.";
   const action = initialData ? "수정 완료" : "만들기";
 
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof productFormSchema>>({
+    resolver: zodResolver(productFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: initialData?.name || "",
       price: initialData?.price || 0,
-      isSale: initialData?.isSale || false,
       saleRate: initialData?.saleRate || 0,
-      size: initialData?.size || "",
       brandId: initialData?.brandId || "",
+      colors: [],
+      sizes: [],
       categoryId: initialData?.categoryId || "",
-      colorId: initialData?.colorId || "",
       images: [],
     },
   });
 
-  const { setValue } = form;
+  const { watch, setValue, clearErrors, setError } = form;
+  const currentImages = watch("images");
 
   const onDrop = async (acceptedFiles: File[]) => {
     setValue("images", acceptedFiles);
     setPreviewUrls(() =>
       acceptedFiles.map((file) => URL.createObjectURL(file))
     );
+    clearErrors("images");
   };
 
-  const onSubmit = async (data: ProductFormValues) => {
-    console.log("호출", data);
-    startTransition(async () => {
-      const formData = new FormData();
-      data.images.forEach((file) => {
-        formData.append("name", data.name);
-        formData.append("file", file, file.name);
+  const onDelete = (index: number) => {
+    const newPreviewUrls = previewUrls.filter((_, idx) => idx !== index);
+    const newImages = currentImages.filter((_, idx) => idx !== index);
+
+    if (newImages.length === 0) {
+      setError("images", {
+        type: "required",
+        message: "상품 이미지를 업로드해주세요.",
       });
-      await uploadImage(formData)
-        .then(async () => {
-          const imageUrls = data.images.map(
-            (image) =>
-              `${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL}/${data.name}/${image.name}`
-          );
-          if (initialData) {
-            updateProduct({
-              id: initialData.id,
-              name: data.name,
-              price: data.price,
-              isSale: data.isSale || false,
-              saleRate: data.saleRate || 0,
-              brandId: data.brandId,
-              categoryId: data.categoryId,
-              size: data.size,
-              colorId: data.colorId,
-              images: imageUrls,
-            })
-              .then(() => {
-                router.refresh();
-                router.push(`${ADMIN_STORE_ROUTES.PRODUCT}`);
-                toast.success(toastMessage);
-              })
-              .catch(() => {
-                toast.error("문제가 발생 하였습니다.");
-              });
-          } else {
-            const service = await getServiceByName(params.serviceName);
-            if (service) {
-              createProduct({
-                name: data.name,
-                price: data.price,
-                isSale: data.isSale || false,
-                saleRate: data.saleRate || 0,
-                brandId: data.brandId,
-                categoryId: data.categoryId,
-                size: data.size,
-                colorId: data.colorId,
-                images: imageUrls,
-              })
-                .then(() => {
-                  router.refresh();
-                  router.push(`${ADMIN_STORE_ROUTES.PRODUCT}`);
-                  toast.success(toastMessage);
-                })
-                .catch(() => {
-                  toast.error("문제가 발생 하였습니다.");
-                });
-            }
-          }
-        })
-        .catch((error) => {
-          toast.error(error.message);
-          console.error("error", error);
-        });
+    }
+
+    setValue("images", newImages);
+    setPreviewUrls(newPreviewUrls);
+  };
+
+  const onSubmit = async (data: z.infer<typeof productFormSchema>) => {
+    const formData = new FormData();
+    const imageUrls = data.images.map(
+      (image) =>
+        `${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL}/${data.name}/${image.name}`
+    );
+
+    data.images.forEach((file) => {
+      formData.append("name", data.name);
+      formData.append("file", file, file.name);
     });
+
+    try {
+      setLoading(true);
+      await uploadImage(formData);
+
+      if (initialData) {
+        updateProduct({
+          id: initialData.id,
+          name: data.name,
+          price: data.price,
+          saleRate: data.saleRate || 0,
+          brandId: data.brandId,
+          categoryId: data.categoryId,
+          sizes: data.sizes,
+          colors: data.colors,
+          images: imageUrls,
+        });
+      } else {
+        createProduct({
+          name: data.name,
+          price: data.price,
+          saleRate: data.saleRate || 0,
+          brandId: data.brandId,
+          categoryId: data.categoryId,
+          sizes: data.sizes,
+          colors: data.colors,
+          images: imageUrls,
+        });
+      }
+
+      router.refresh();
+      router.push(`${ADMIN_STORE_ROUTES.PRODUCT}`);
+      toast.success(toastMessage);
+    } catch (error) {
+      toast.error("문제가 발생 하였습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onCancel = () => {
@@ -176,17 +170,17 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
   };
 
   return (
-    <>
-      <div className="flex items-center justify-between">
-        <Heading title={title} description={description} />
+    <FormProvider {...form}>
+      <div className="flex items-center justify-center">
+        <Heading title={title} />
       </div>
       <Separator />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full"
+          className="flex flex-col items-center space-y-8 w-full"
         >
-          <div className="grid grid-cols-2 gap-8">
+          <div className="flex flex-col gap-5 w-[500px]">
             <FormField
               control={form.control}
               name="name"
@@ -195,7 +189,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                   <FormLabel>상품 이름</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
+                      disabled={loading}
                       placeholder="상품 이름을 입력해주세요."
                       {...field}
                     />
@@ -213,7 +207,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                   <FormControl>
                     <Input
                       type="number"
-                      disabled={isPending}
+                      disabled={loading}
                       placeholder="10,000원"
                       {...field}
                     />
@@ -222,23 +216,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="size"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>상품 사이즈</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isPending}
-                      placeholder="상품 사이즈를 입력해주세요."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
             <FormField
               control={form.control}
               name="categoryId"
@@ -246,7 +224,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                 <FormItem>
                   <FormLabel>카테고리</FormLabel>
                   <Select
-                    disabled={isPending}
+                    disabled={loading}
                     onValueChange={field.onChange}
                     value={field.value}
                     defaultValue={field.value}
@@ -262,7 +240,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                     <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                          {category.fullCategory}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -278,7 +256,7 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                 <FormItem>
                   <FormLabel>브랜드</FormLabel>
                   <Select
-                    disabled={isPending}
+                    disabled={loading}
                     onValueChange={field.onChange}
                     value={field.value}
                     defaultValue={field.value}
@@ -305,53 +283,27 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
             />
             <FormField
               control={form.control}
-              name="colorId"
-              render={({ field }) => (
+              name="sizes"
+              render={() => (
                 <FormItem>
-                  <FormLabel>색상</FormLabel>
-                  <Select
-                    disabled={isPending}
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          defaultValue={field.value}
-                          placeholder="색상을 선택해주세요."
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {colors.map((color) => (
-                        <SelectItem key={color.id} value={color.id}>
-                          {color.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>상품 사이즈</FormLabel>
+                  <FormControl>
+                    <MultiSelect items={sizes} name={"sizes"} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="isSale"
-              render={({ field }) => (
-                <FormItem className="flex flex-fow items-start space-x-3 space-y-0 rounded-md border p-4">
+              name="colors"
+              render={() => (
+                <FormItem>
+                  <FormLabel>색상</FormLabel>
                   <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <MultiSelect items={colors} name={"colors"} />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>할인여부</FormLabel>
-                    <FormDescription>
-                      할인 상품이라면 체크해주세요.
-                    </FormDescription>
-                  </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -360,13 +312,13 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
               control={form.control}
               name="saleRate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="mt-3">
                   <FormLabel>할인율</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      disabled={isPending}
-                      placeholder="10,000원"
+                      disabled={loading}
+                      placeholder="ex) 10%"
                       {...field}
                     />
                   </FormControl>
@@ -381,28 +333,34 @@ const ProjectForm = ({ initialData, categories, brands, colors }: Props) => {
                 <FormItem className="my-3">
                   <FormLabel>상품 이미지</FormLabel>
                   <FormControl>
-                    <ImageUpload previewUrls={previewUrls} onDrop={onDrop} />
+                    <ImageUpload
+                      previewUrls={previewUrls}
+                      onDrop={onDrop}
+                      onDelete={onDelete}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
-          <Button
-            variant={"secondary"}
-            className="ml-auto mr-2"
-            onClick={onCancel}
-            type="button"
-          >
-            취소
-          </Button>
-          <Button disabled={isPending} className="ml-auto" type="submit">
-            {action}
-          </Button>
+          <div>
+            <Button
+              variant={"secondary"}
+              className="ml-auto mr-2"
+              onClick={onCancel}
+              type="button"
+            >
+              취소
+            </Button>
+            <Button disabled={loading} className="ml-auto" type="submit">
+              {action}
+            </Button>
+          </div>
         </form>
       </Form>
       <Separator />
-    </>
+    </FormProvider>
   );
 };
 

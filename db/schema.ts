@@ -8,6 +8,7 @@ import {
   uuid,
   boolean,
   AnyPgColumn,
+  unique,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 
@@ -134,22 +135,33 @@ export const storeBanner = pgTable("banner", {
 
 export type TSelectBanner = typeof storeBanner.$inferSelect;
 
-export const storeCategory = pgTable("storeCategory", {
-  id: uuid("id").defaultRandom().notNull().primaryKey(),
-  name: text("name").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  parentCategoryId: uuid("parentCategoryId").references(
-    (): AnyPgColumn => storeCategory.id,
-    { onDelete: "cascade" }
-  ),
-});
+export const storeCategory = pgTable(
+  "storeCategory",
+  {
+    id: uuid("id").defaultRandom().notNull().primaryKey(),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    type: text("type").notNull(),
+    parentCategoryId: uuid("parentCategoryId").references(
+      (): AnyPgColumn => storeCategory.id,
+      { onDelete: "cascade" }
+    ),
+  },
+  (table) => ({
+    unq: unique().on(table.parentCategoryId, table.name).nullsNotDistinct(),
+  })
+);
 
 export type TSelectStoreCategory = typeof storeCategory.$inferSelect;
 
 export const storeCategoryRelations = relations(
   storeCategory,
   ({ one, many }) => ({
+    parentCategory: one(storeCategory, {
+      fields: [storeCategory.parentCategoryId],
+      references: [storeCategory.id],
+    }),
     products: many(storeProduct),
   })
 );
@@ -164,8 +176,22 @@ export const storeColor = pgTable("storeColor", {
 
 export type TSelectStoreColor = typeof storeColor.$inferSelect;
 
-export const storeColorRelations = relations(storeColor, ({ one, many }) => ({
-  products: many(storeProduct),
+export const storeColorRelations = relations(storeColor, ({ many }) => ({
+  colorsToProducts: many(colorsToProducts),
+}));
+
+export const storeSize = pgTable("storeSize", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  name: text("name").notNull(),
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type TSelectStoreSize = typeof storeSize.$inferSelect;
+
+export const storeSizeRelations = relations(storeSize, ({ many }) => ({
+  sizesToProducts: many(sizesToProducts),
 }));
 
 export const storeBrand = pgTable("storeBrand", {
@@ -177,7 +203,7 @@ export const storeBrand = pgTable("storeBrand", {
 
 export type TSelectStoreBrand = typeof storeBrand.$inferSelect;
 
-export const storeBrandRelations = relations(storeBrand, ({ one, many }) => ({
+export const storeBrandRelations = relations(storeBrand, ({ many }) => ({
   products: many(storeProduct),
 }));
 
@@ -189,16 +215,12 @@ export const storeProduct = pgTable("storeProduct", {
   isSale: boolean("isSale"),
   saleRate: integer("saleRate"),
   isSoldOut: boolean("isSoldOut").default(false),
-  size: text("size").notNull(),
   images: text("images").array().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   categoryId: uuid("categoryId")
     .notNull()
     .references(() => storeCategory.id, { onDelete: "cascade" }),
-  colorId: uuid("colorId")
-    .notNull()
-    .references(() => storeColor.id, { onDelete: "cascade" }),
   brandId: uuid("brandId")
     .notNull()
     .references(() => storeBrand.id, { onDelete: "cascade" }),
@@ -206,17 +228,66 @@ export const storeProduct = pgTable("storeProduct", {
 
 export type TSelectStoreProduct = typeof storeProduct.$inferSelect;
 
-export const storeProductsRelations = relations(storeProduct, ({ one }) => ({
-  category: one(storeCategory, {
-    fields: [storeProduct.categoryId],
-    references: [storeCategory.id],
-  }),
-  color: one(storeColor, {
-    fields: [storeProduct.colorId],
-    references: [storeColor.id],
-  }),
-  brand: one(storeBrand, {
-    fields: [storeProduct.brandId],
-    references: [storeBrand.id],
-  }),
-}));
+export const storeProductsRelations = relations(
+  storeProduct,
+  ({ one, many }) => ({
+    category: one(storeCategory, {
+      fields: [storeProduct.categoryId],
+      references: [storeCategory.id],
+    }),
+    brand: one(storeBrand, {
+      fields: [storeProduct.brandId],
+      references: [storeBrand.id],
+    }),
+    colorsToProducts: many(colorsToProducts),
+    sizesToProducts: many(sizesToProducts),
+  })
+);
+
+export const colorsToProducts = pgTable("colorsToProducts", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  colorId: uuid("colorId")
+    .notNull()
+    .references(() => storeColor.id),
+  productId: uuid("productId")
+    .notNull()
+    .references(() => storeProduct.id),
+});
+
+export const colorsToProductsRelations = relations(
+  colorsToProducts,
+  ({ one }) => ({
+    color: one(storeColor, {
+      fields: [colorsToProducts.colorId],
+      references: [storeColor.id],
+    }),
+    product: one(storeProduct, {
+      fields: [colorsToProducts.productId],
+      references: [storeProduct.id],
+    }),
+  })
+);
+
+export const sizesToProducts = pgTable("sizesToProducts", {
+  id: uuid("id").defaultRandom().notNull().primaryKey(),
+  sizeId: uuid("sizeId")
+    .notNull()
+    .references(() => storeSize.id),
+  productId: uuid("productId")
+    .notNull()
+    .references(() => storeProduct.id),
+});
+
+export const sizesToProductsRelations = relations(
+  sizesToProducts,
+  ({ one }) => ({
+    size: one(storeSize, {
+      fields: [sizesToProducts.sizeId],
+      references: [storeSize.id],
+    }),
+    product: one(storeProduct, {
+      fields: [sizesToProducts.productId],
+      references: [storeProduct.id],
+    }),
+  })
+);

@@ -18,14 +18,13 @@ export const columns: ColumnDef<BrandColumn>[] = [
   },
   {
     accessorKey: "createdAt",
-    minSize: 150,
-    maxSize: 300,
+    minSize: 350,
+    maxSize: 500,
     header: "생성날짜",
   },
   {
     id: "actions",
-    minSize: 50,
-    maxSize: 50,
+    size: 50,
     cell: ({ row }) => <CellAction data={row.original} />,
   },
 ];

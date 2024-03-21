@@ -1,10 +1,10 @@
 "use client";
 
 import * as z from "zod";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HexColorPicker } from "react-colorful";
 
@@ -23,40 +23,30 @@ import { Input } from "@/components/ui/input";
 
 import { TSelectStoreColor } from "@/db/schema";
 import { createColor, updateColor } from "@/actions/storeColor";
-import { getServiceByName } from "@/actions/service";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { PopoverContent } from "@radix-ui/react-popover";
 import { ADMIN_STORE_ROUTES } from "@/routes";
-
-const formSchema = z.object({
-  name: z.string().min(1),
-  value: z.string().min(1),
-});
-
-type ColorFormValues = z.infer<typeof formSchema>;
+import { colorFormSchema } from "@/schemas/admin";
 
 interface Props {
   initialData?: TSelectStoreColor;
 }
 
 const ColorForm = ({ initialData }: Props) => {
-  const params = useParams<{ serviceName: string }>();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "수정하기" : "만들기";
-  const description = initialData
-    ? "수정할 색상 정보를 넣어주세요."
-    : "새로 만들 색상의 정보를 넣어주세요.";
+  const title = initialData ? "색상 수정하기" : "색상 만들기";
   const toastMessage = initialData
     ? "색상 수정을 완료했습니다."
     : "새로운 색상을 만들었습니다.";
   const action = initialData ? "수정 완료" : "만들기";
 
-  const form = useForm<ColorFormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof colorFormSchema>>({
+    resolver: zodResolver(colorFormSchema),
+    mode: "onChange",
     defaultValues: initialData || {
       name: "",
       value: "",
@@ -67,36 +57,26 @@ const ColorForm = ({ initialData }: Props) => {
 
   const value = watch("value");
 
-  const onSubmit = async (data: ColorFormValues) => {
-    startTransition(async () => {
+  const onSubmit = async (data: z.infer<typeof colorFormSchema>) => {
+    try {
+      setLoading(true);
       if (initialData) {
-        updateColor({ id: initialData.id, name: data.name, value: data.value })
-          .then(() => {
-            router.refresh();
-            router.push(`${ADMIN_STORE_ROUTES.COLOR}`);
-            toast.success(toastMessage);
-          })
-          .catch(() => {
-            toast.error("문제가 발생 하였습니다.");
-          });
+        updateColor({ id: initialData.id, name: data.name, value: data.value });
       } else {
-        const service = await getServiceByName(params.serviceName);
-        if (service) {
-          createColor({
-            name: data.name,
-            value: data.value,
-          })
-            .then(() => {
-              router.refresh();
-              router.push(`${ADMIN_STORE_ROUTES.COLOR}`);
-              toast.success(toastMessage);
-            })
-            .catch(() => {
-              toast.error("문제가 발생 하였습니다.");
-            });
-        }
+        createColor({
+          name: data.name,
+          value: data.value,
+        });
       }
-    });
+
+      router.refresh();
+      router.push(`${ADMIN_STORE_ROUTES.COLOR}`);
+      toast.success(toastMessage);
+    } catch (error) {
+      toast.error("문제가 발생 하였습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onCancel = () => {
@@ -105,16 +85,16 @@ const ColorForm = ({ initialData }: Props) => {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <Heading title={title} description={description} />
+      <div className="flex items-center justify-center">
+        <Heading title={title} />
       </div>
       <Separator />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full"
+          className="flex flex-col items-center space-y-8 w-full"
         >
-          <div className="grid grid-cols-3 gap-8">
+          <div className="flex flex-col gap-5 w-[500px]">
             <FormField
               control={form.control}
               name="name"
@@ -123,7 +103,7 @@ const ColorForm = ({ initialData }: Props) => {
                   <FormLabel>이름</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
+                      disabled={loading}
                       placeholder="이름을 입력해주세요."
                       {...field}
                     />
@@ -137,11 +117,11 @@ const ColorForm = ({ initialData }: Props) => {
               name="value"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>값</FormLabel>
+                  <FormLabel>색상 값</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-x-4">
                       <Input
-                        disabled={isPending}
+                        disabled={loading}
                         placeholder="색상 값을 입력해주세요."
                         {...field}
                       />
@@ -171,17 +151,19 @@ const ColorForm = ({ initialData }: Props) => {
               )}
             />
           </div>
-          <Button
-            variant={"secondary"}
-            className="ml-auto mr-2"
-            onClick={onCancel}
-            type="button"
-          >
-            취소
-          </Button>
-          <Button disabled={isPending} className="ml-auto" type="submit">
-            {action}
-          </Button>
+          <div>
+            <Button
+              variant={"secondary"}
+              className="ml-auto mr-2"
+              onClick={onCancel}
+              type="button"
+            >
+              취소
+            </Button>
+            <Button disabled={loading} className="ml-auto" type="submit">
+              {action}
+            </Button>
+          </div>
         </form>
       </Form>
       <Separator />

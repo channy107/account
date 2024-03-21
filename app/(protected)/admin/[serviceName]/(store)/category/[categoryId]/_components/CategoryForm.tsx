@@ -1,10 +1,10 @@
 "use client";
 
 import * as z from "zod";
-import { useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import Heading from "@/components/admin/Heading";
@@ -21,69 +21,90 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { TSelectStoreCategory } from "@/db/schema";
-import { createCategory, updateCategory } from "@/actions/storeCategory";
-import { getServiceByName } from "@/actions/service";
+import { createCategory, getCategories } from "@/actions/storeCategory";
 import { ADMIN_STORE_ROUTES } from "@/routes";
+import CategorySelect from "./CategorySelect";
+import { categoryFormSchema } from "@/schemas/admin";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-});
-
-type CategoryFormValues = z.infer<typeof formSchema>;
+export type TCategoryType =
+  | "largeCategoryName"
+  | "mediumCategoryName"
+  | "smallCategoryName";
 
 interface Props {
-  initialData?: TSelectStoreCategory;
+  largeCategories: TSelectStoreCategory[];
 }
 
-const CategoryForm = ({ initialData }: Props) => {
-  const params = useParams<{ serviceName: string }>();
+const CategoryForm = ({ largeCategories }: Props) => {
   const router = useRouter();
+  const [isNew, setIsNew] = useState({
+    largeCategoryName: false,
+    mediumCategoryName: false,
+    smallCategoryName: false,
+  });
+  const [mediumCategories, setMediumCategories] = useState<
+    TSelectStoreCategory[]
+  >([]);
 
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
 
-  const title = initialData ? "수정하기" : "만들기";
-  const description = initialData
-    ? "수정할 카테고리 이름을 넣어주세요."
-    : "새로 만들 카테고리의 이름을 넣어주세요.";
-  const toastMessage = initialData
-    ? "카테고리 수정을 완료했습니다."
-    : "새로운 카테고리를 만들었습니다.";
-  const action = initialData ? "수정 완료" : "만들기";
-
-  const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: initialData || {
-      name: "",
+  const form = useForm<z.infer<typeof categoryFormSchema>>({
+    resolver: zodResolver(categoryFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      largeCategoryName: "",
+      mediumCategoryName: "",
+      smallCategoryName: "",
     },
   });
 
-  const onSubmit = async (data: CategoryFormValues) => {
-    startTransition(async () => {
-      if (initialData) {
-        updateCategory({ id: initialData.id, name: data.name })
-          .then(() => {
-            router.refresh();
-            router.push(`${ADMIN_STORE_ROUTES.CATEGORY}`);
-            toast.success(toastMessage);
-          })
-          .catch(() => {
-            toast.error("문제가 발생 하였습니다.");
-          });
-      } else {
-        const service = await getServiceByName(params.serviceName);
-        if (service) {
-          createCategory({ name: data.name })
-            .then(() => {
-              router.refresh();
-              router.push(`${ADMIN_STORE_ROUTES.CATEGORY}`);
-              toast.success(toastMessage);
-            })
-            .catch(() => {
-              toast.error("문제가 발생 하였습니다.");
-            });
-        }
+  const { watch, setValue, clearErrors } = form;
+
+  const [largeCategoryName, mediumCategoryName] = watch([
+    "largeCategoryName",
+    "mediumCategoryName",
+  ]);
+
+  const onSelect = async ({
+    id,
+    name,
+    value,
+  }: {
+    id: string;
+    name: TCategoryType;
+    value: string;
+  }) => {
+    if (name === "largeCategoryName") {
+      try {
+        setLoading(true);
+        const response = await getCategories("medium", id);
+        setMediumCategories(response);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-    });
+    }
+    setValue(name, value);
+    clearErrors(name);
+  };
+
+  const onSubmit = async (data: z.infer<typeof categoryFormSchema>) => {
+    try {
+      setLoading(true);
+      await createCategory({
+        categoryLarge: { name: data.largeCategoryName, type: "large" },
+        categoryMedium: { name: data.mediumCategoryName, type: "medium" },
+        categorySmall: { name: data.smallCategoryName, type: "small" },
+      });
+      router.refresh();
+      router.push(`${ADMIN_STORE_ROUTES.CATEGORY}`);
+      toast.success("새로운 카테고리를 만들었습니다.");
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onCancel = () => {
@@ -92,26 +113,114 @@ const CategoryForm = ({ initialData }: Props) => {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <Heading title={title} description={description} />
+      <div className="flex items-center justify-center">
+        <Heading
+          title={"카테고리 만들기"}
+          description={"카테고리 정보를 넣어주세요."}
+        />
       </div>
       <Separator />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full"
+          className="flex flex-col items-center space-y-8 w-full"
         >
-          <div className="grid grid-cols-3 gap-8">
+          <div className="flex flex-col gap-5 w-[500px]">
             <FormField
               control={form.control}
-              name="name"
+              name="largeCategoryName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>이름</FormLabel>
+                  <FormLabel>대분류</FormLabel>
+                  <FormControl>
+                    {isNew.largeCategoryName ? (
+                      <>
+                        <Input
+                          disabled={loading}
+                          placeholder="대분류 카테고리를 입력해주세요."
+                          {...field}
+                        />
+                        <Button
+                          onClick={() => {
+                            setIsNew((prev) => ({
+                              ...prev,
+                              largeCategoryName: false,
+                            }));
+                          }}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          기존 대분류 선택
+                        </Button>
+                      </>
+                    ) : (
+                      <CategorySelect
+                        disabled={loading}
+                        value={largeCategoryName}
+                        name="largeCategoryName"
+                        type="대분류"
+                        items={largeCategories}
+                        setIsNew={setIsNew}
+                        onSelect={onSelect}
+                      />
+                    )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="mediumCategoryName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>중분류</FormLabel>
+                  <FormControl>
+                    {isNew.mediumCategoryName ? (
+                      <>
+                        <Input
+                          disabled={loading}
+                          placeholder="중분류 카테고리를 입력해주세요."
+                          {...field}
+                        />
+                        <Button
+                          onClick={() => {
+                            setIsNew((prev) => ({
+                              ...prev,
+                              mediumCategoryName: false,
+                            }));
+                          }}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          기존 중분류 선택
+                        </Button>
+                      </>
+                    ) : (
+                      <CategorySelect
+                        disabled={loading}
+                        value={mediumCategoryName}
+                        name="mediumCategoryName"
+                        type="중분류"
+                        items={mediumCategories}
+                        setIsNew={setIsNew}
+                        onSelect={onSelect}
+                      />
+                    )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="smallCategoryName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>소분류</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
-                      placeholder="이름을 입력해주세요."
+                      placeholder="소분류 카테고리를 입력해주세요."
                       {...field}
                     />
                   </FormControl>
@@ -120,17 +229,19 @@ const CategoryForm = ({ initialData }: Props) => {
               )}
             />
           </div>
-          <Button
-            variant={"secondary"}
-            className="ml-auto mr-2"
-            onClick={onCancel}
-            type="button"
-          >
-            취소
-          </Button>
-          <Button disabled={isPending} className="ml-auto" type="submit">
-            {action}
-          </Button>
+          <div>
+            <Button
+              variant={"secondary"}
+              className="ml-auto mr-2"
+              onClick={onCancel}
+              type="button"
+            >
+              취소
+            </Button>
+            <Button disabled={loading} className="ml-auto" type="submit">
+              만들기
+            </Button>
+          </div>
         </form>
       </Form>
       <Separator />

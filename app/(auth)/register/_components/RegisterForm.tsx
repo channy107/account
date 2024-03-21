@@ -18,9 +18,9 @@ import {
 } from "@/components/ui/form";
 import { FormSuccess } from "@/components/auth/FormSuccess";
 import { FormError } from "@/components/auth/FormError";
-import { RegisterSchema } from "@/schemas";
+import { RegisterSchema } from "@/schemas/auth";
 import { register } from "@/actions/register";
-import ConfirmButton from "@/components/common/ConfirmButton";
+import ConfirmButton from "@/components/shared/ConfirmButton";
 
 export const RegisterForm = () => {
   const [error, setError] = useState<string | undefined>("");

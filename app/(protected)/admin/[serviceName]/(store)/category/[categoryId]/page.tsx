@@ -1,18 +1,17 @@
+import { Suspense } from "react";
 import CategoryForm from "./_components/CategoryForm";
-import { getCategory } from "@/actions/storeCategory";
+import { getCategories } from "@/actions/storeCategory";
+import FullScreenLoader from "@/components/shared/FullScreenLoader";
 
-interface Props {
-  params: { categoryId: string };
-}
+const CategoryFormPage = async () => {
+  const largeCategories = await getCategories("large");
 
-const CategoryFormPage = async ({ params }: Props) => {
-  const category = await getCategory(
-    params.categoryId !== "new" ? params.categoryId : undefined
-  );
   return (
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
-        <CategoryForm initialData={category} />
+        <Suspense fallback={<FullScreenLoader />}>
+          <CategoryForm largeCategories={largeCategories} />
+        </Suspense>
       </div>
     </div>
   );

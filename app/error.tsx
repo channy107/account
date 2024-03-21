@@ -1,6 +1,6 @@
 "use client";
 
-import ErrorComponent from "@/components/common/ErrorComponent";
+import ErrorComponent from "@/components/shared/ErrorComponent";
 import { useEffect } from "react";
 
 export default function Error({

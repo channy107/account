@@ -1,5 +1,5 @@
 "use client";
-import ErrorComponent from "@/components/common/ErrorComponent";
+import ErrorComponent from "@/components/shared/ErrorComponent";
 import { ADMIN_BASE } from "@/routes";
 import { useRouter } from "next/navigation";
 
